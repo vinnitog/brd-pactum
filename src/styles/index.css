@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'DM Sans';
+  src: url('/fonts/DMSans-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'DM Sans';
+  src: url('/fonts/DMSans-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'DM Sans';
+  src: url('/fonts/DMSans-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+/* Evita zoom automático no foco de campos < 16px no mobile. */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+body {
+  @apply text-white font-sans antialiased;
+  background-color: #0B0911;
+  /* Glow radial discreto da cor da marca (#964AFB) no topo. */
+  background-image: radial-gradient(
+    1100px 520px at 50% -8%,
+    rgba(150, 74, 251, 0.12),
+    transparent 62%
+  );
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+/* Scrollbar sutil no tema escuro. */
+* {
+  scrollbar-color: #3a3350 transparent;
+}
