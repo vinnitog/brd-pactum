@@ -58,6 +58,9 @@ jobs:
           # Token da assinatura Pro/Max, gerado com `claude setup-token`.
           # Evita abrir billing separado na API.
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Temporario: expoe a saida completa da SDK para ver a mensagem de erro
+          # real quando o run volta is_error:true. Remover depois do diagnostico.
+          show_full_output: true
           # Nao adicione flags aqui sem conferir em `claude --help`: a action
           # repassa isto direto para a CLI, e uma opcao inexistente mata o run em
           # segundos com a stderr escondida ("SDK execution error").
