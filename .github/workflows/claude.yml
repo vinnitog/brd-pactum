@@ -14,6 +14,16 @@ concurrency:
   group: claude-issue-${{ github.event.issue.number }}
   cancel-in-progress: true
 
+# O reusable pede write (contents, issues, pull-requests) + id-token. Ao chamar um
+# reusable, as permissoes dele nao podem exceder as do caller, e o default do repo e
+# `read` - sem elevar aqui, o run falha no startup. Elevamos ao que o reusable precisa.
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+  actions: read
+
 jobs:
   develop:
     if: contains(github.event.issue.labels.*.name, 'trello-auto')
