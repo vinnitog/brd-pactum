@@ -21,7 +21,8 @@
     "javascript-testing-patterns",
     "e2e-testing-patterns",
     "accessibility-compliance",
-    "sast-configuration"
+    "sast-configuration",
+    "grill-me"
   ],
   "sources": [
     {

@@ -12,6 +12,7 @@ Este arquivo e gerado pelo hub `togs-backoffice`. O caminho local do control pla
 | `e2e-testing-patterns` | `wshobson/agents` | frontend, critical-flow, playwright, cypress |
 | `accessibility-compliance` | `wshobson/agents` | frontend, accessibility, wcag, screen-reader |
 | `sast-configuration` | `wshobson/agents` | auth, personal-data, payments, security, ci |
+| `grill-me` | `mattpocock/skills` | explicit-invocation, requirements, plan, design, decision |
 
 ## Licencas
 
