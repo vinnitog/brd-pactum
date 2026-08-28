@@ -1,0 +1,37 @@
+name: Claude Code
+
+# Fase 1 (implementacao): delega ao workflow reutilizavel do brd-ci. Este arquivo
+# precisa existir na branch DEFAULT (main): eventos `issues` sao lidos so de la.
+#
+# So `labeled`: o brd-ops cria a Issue ja com a label trello-auto, e o GitHub emite
+# `labeled` tanto na criacao quanto na label colada a mao. Ouvir tambem `opened`
+# disparava um segundo run redundante (cancelado pelo concurrency).
+on:
+  issues:
+    types: [labeled]
+
+concurrency:
+  group: claude-issue-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+# O reusable pede write (contents, issues, pull-requests) + id-token. Ao chamar um
+# reusable, as permissoes dele nao podem exceder as do caller, e o default do repo e
+# `read` - sem elevar aqui, o run falha no startup. Elevamos ao que o reusable precisa.
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+  actions: read
+
+jobs:
+  develop:
+    # So a ADICAO da label trello-auto dispara o dev. Checar `github.event.label.name`
+    # (a label recem-adicionada) em vez de "a issue tem trello-auto": senao, quando o
+    # agente aplica `necessita-revisao`, o evento `labeled` re-dispararia e o concurrency
+    # cancelaria o run do proprio agente.
+    if: github.event.label.name == 'trello-auto'
+    uses: vinnitog/brd-ci/.github/workflows/claude-develop.yml@main
+    with:
+      issue_number: ${{ github.event.issue.number }}
+    secrets: inherit
