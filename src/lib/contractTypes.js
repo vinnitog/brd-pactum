@@ -246,3 +246,21 @@ export function findTipo(groupId, tipoNome) {
   if (!g) return null
   return g.tipos.find((t) => t.nome === tipoNome) || null
 }
+
+export function getContractValuesByType(contracts) {
+  const values = new Map()
+  for (const contract of contracts) {
+    const type = contract.tipo?.trim()
+    const group = CONTRACT_GROUPS.find((item) => item.id === contract.groupId)
+    const duplicatedAcrossGroups = type && CONTRACT_GROUPS.filter((item) => item.tipos.some((itemType) => itemType.nome === type)).length > 1
+    const groupLabel = group?.label.replace(/^[IVX]+\.\s*/, '')
+    const label = type
+      ? duplicatedAcrossGroups && groupLabel
+        ? `${type} — ${groupLabel}`
+        : type
+      : 'Sem classificação'
+    const value = Number(contract.valor) || 0
+    if (value > 0) values.set(label, (values.get(label) || 0) + value)
+  }
+  return [...values.entries()].sort((a, b) => b[1] - a[1])
+}

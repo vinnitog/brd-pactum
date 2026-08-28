@@ -3,7 +3,8 @@ import { useAuth } from '../contexts/AuthContext.jsx'
 import { isAdvogado, visibleParties } from '../lib/permissions.js'
 import { useStore } from '../lib/store.js'
 import { Card, Badge } from '../components/ui/index.jsx'
-import { formatDateBR } from '../lib/format.js'
+import { formatDateBR, todayLocalISO } from '../lib/format.js'
+import { getUpcomingEvents } from '../lib/deadlines.js'
 
 function firstName(name = '') {
   const parts = name.trim().split(/\s+/)
@@ -23,10 +24,11 @@ export default function Home() {
   const fornecedores = mine.filter((p) => p.kind === 'fornecedor')
   const myPartyIds = new Set(mine.map((p) => p.id))
   const myContracts = contracts.filter((c) => myPartyIds.has(c.partyId))
-  const upcoming = events
-    .filter((e) => !e.done && myPartyIds.has(e.partyId))
-    .filter((e) => e.date >= '2026-01-01')
-    .slice(0, 4)
+  const upcoming = getUpcomingEvents(events, {
+    today: todayLocalISO(),
+    partyIds: myPartyIds,
+    limit: 4
+  })
 
   const tiles = [
     { to: '/clientes', label: 'Clientes', count: clientes.length, desc: 'Cadastros, contratos e agenda de cada cliente.' },
