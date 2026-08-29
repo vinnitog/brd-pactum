@@ -1,24 +1,17 @@
 import { useMemo } from 'react'
 import { useStore } from '../lib/store.js'
-import { CONTRACT_GROUPS } from '../lib/contractTypes.js'
+import { getContractValuesByType } from '../lib/contractTypes.js'
 import { Card } from '../components/ui/index.jsx'
 import Donut from '../components/Donut.jsx'
-import { formatCurrencyBR } from '../lib/format.js'
-
-// Data de referência do app (alinhada ao seed / especificação).
-const TODAY = '2026-07-07'
-
-function daysBetween(fromISO, toISO) {
-  const a = new Date(fromISO + 'T00:00:00')
-  const b = new Date(toISO + 'T00:00:00')
-  return Math.round((b - a) / 86400000)
-}
+import { formatCurrencyBR, todayLocalISO } from '../lib/format.js'
+import { getDeadlineBuckets } from '../lib/deadlines.js'
 
 const PALETTE = ['#964AFB', '#22C55E', '#F5C518', '#38BDF8', '#FB7185', '#A78BFA', '#34D399', '#FBBF24', '#60A5FA', '#F472B6', '#2DD4BF']
 
 export default function Dashboard() {
   const contracts = useStore((s) => s.contracts)
   const events = useStore((s) => s.events)
+  const today = todayLocalISO()
 
   const ativos = contracts.filter((c) => c.status === 'ativo')
   const inativos = contracts.filter((c) => c.status !== 'ativo')
@@ -27,37 +20,15 @@ export default function Dashboard() {
   const valorInativos = inativos.reduce((a, c) => a + (Number(c.valor) || 0), 0)
 
   // Prazos: baseados nos vencimentos futuros da agenda.
-  const prazos = useMemo(() => {
-    const buckets = { semana: 0, mes: 0, semestre: 0, ano: 0 }
-    for (const e of events) {
-      if (e.type !== 'vencimento' || e.done) continue
-      const d = daysBetween(TODAY, e.date)
-      if (d < 0) continue
-      if (d <= 7) buckets.semana++
-      else if (d <= 31) buckets.mes++
-      else if (d <= 183) buckets.semestre++
-      else buckets.ano++
-    }
-    return buckets
-  }, [events])
+  const prazos = useMemo(() => getDeadlineBuckets(events, today), [events, today])
 
-  // Valor dos contratos por classificação (grupo).
-  const porClassificacao = useMemo(() => {
-    const map = {}
-    for (const c of contracts) {
-      const g = CONTRACT_GROUPS.find((x) => x.id === c.groupId)
-      const label = g ? g.label.replace(/^[IVX]+\.\s*/, '') : 'Sem classificação'
-      map[label] = (map[label] || 0) + (Number(c.valor) || 0)
-    }
-    return Object.entries(map)
-      .filter(([, v]) => v > 0)
-      .sort((a, b) => b[1] - a[1])
-  }, [contracts])
+  // Valor dos contratos por tipo específico.
+  const porClassificacao = useMemo(() => getContractValuesByType(contracts), [contracts])
 
   return (
     <div>
       <h1 className="mb-1 text-2xl font-bold">Dashboard</h1>
-      <p className="mb-6 text-sm text-white/50">Indicadores dos contratos — referência {TODAY.split('-').reverse().join('/')}.</p>
+      <p className="mb-6 text-sm text-white/50">Indicadores dos contratos — referência {today.split('-').reverse().join('/')}.</p>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <Card>

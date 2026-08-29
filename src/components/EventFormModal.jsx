@@ -52,7 +52,7 @@ export default function EventFormModal({ partyId, contracts = [], onClose }) {
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Data">
-            <Input type="date" value={form.date} onChange={(e) => set('date', e.target.value)} />
+            <Input type="date" value={form.date} onChange={(e) => set('date', e.target.value)} required aria-required="true" />
           </Field>
           <Field label="Observação">
             <Input value={form.note} onChange={(e) => set('note', e.target.value)} placeholder="Detalhe do vencimento" />

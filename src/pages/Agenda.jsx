@@ -4,6 +4,7 @@ import { visibleParties } from '../lib/permissions.js'
 import { useStore } from '../lib/store.js'
 import AgendaList from '../components/AgendaList.jsx'
 import { formatDateBR } from '../lib/format.js'
+import { isValidLocalISO } from '../lib/deadlines.js'
 
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 const MONTHS = [
@@ -17,7 +18,7 @@ export default function Agenda() {
   const parties = useStore((s) => s.parties)
   const allEvents = useStore((s) => s.events)
   const [mode, setMode] = useState('agenda') // agenda (calendário) | lista
-  const [cursor, setCursor] = useState(() => new Date(2026, 6, 1)) // jul/2026 (seed)
+  const [cursor, setCursor] = useState(() => new Date())
   const [selectedDay, setSelectedDay] = useState(null)
 
   const visibleIds = useMemo(() => new Set(visibleParties(user, parties).map((p) => p.id)), [user, parties])
@@ -30,7 +31,7 @@ export default function Agenda() {
   const byDay = useMemo(() => {
     const map = {}
     for (const e of events) {
-      if (e.date.startsWith(monthPrefix)) {
+      if (isValidLocalISO(e.date) && e.date.startsWith(monthPrefix)) {
         ;(map[e.date] ||= []).push(e)
       }
     }

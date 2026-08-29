@@ -55,15 +55,19 @@ export default function AgendaList({ events, showParty = true, canManage = false
                 <>
                   <button
                     onClick={() => toggleEventDone(e.id)}
-                    className="rounded-lg px-2 py-1 text-xs text-white/50 hover:text-white"
+                    className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg px-2 py-1 text-xs text-white/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brd/60"
                     title="Concluir/reabrir"
+                    aria-label={e.done ? 'Reabrir evento' : 'Concluir evento'}
                   >
                     {e.done ? '↺' : '✓'}
                   </button>
                   <button
-                    onClick={() => deleteEvent(e.id)}
-                    className="rounded-lg px-2 py-1 text-xs text-white/40 hover:text-red-400"
+                    onClick={() => {
+                      if (window.confirm('Excluir este evento da agenda? Esta ação não pode ser desfeita.')) deleteEvent(e.id)
+                    }}
+                    className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg px-2 py-1 text-xs text-white/40 hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
                     title="Excluir"
+                    aria-label="Excluir evento"
                   >
                     🗑
                   </button>
