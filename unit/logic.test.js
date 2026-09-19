@@ -5,6 +5,7 @@ import { buildReminder } from '../src/lib/reminderTemplate.js'
 import { CONTRACT_GROUPS, findTipo, getContractValuesByType } from '../src/lib/contractTypes.js'
 import { parseCurrencyBR, maskCNPJ } from '../src/lib/format.js'
 import { getDeadlineBuckets, getUpcomingEvents, isValidLocalISO } from '../src/lib/deadlines.js'
+import { REVIEW_FIELDS, isReviewFieldEditable, reviewFieldsFor } from '../src/lib/contractReview.js'
 
 const advogado = { id: 'a', role: 'advogado' }
 const cliente = { id: 'c', role: 'cliente', partyId: 'p1' }
@@ -187,6 +188,35 @@ test('dashboard agrega valores pelo tipo específico do contrato', () => {
     ['Locação', 900],
     ['Sem classificação', 300]
   ])
+})
+
+test('revisão respeita a decisão da Fernanda sobre o que pode ser corrigido', () => {
+  const modeOf = (key) => REVIEW_FIELDS.find((f) => f.key === key)?.mode
+
+  // Fica travado (somente conferência).
+  assert.equal(modeOf('comunicacao'), 'travado')
+  assert.equal(isReviewFieldEditable('comunicacao'), false)
+
+  // "Depende do contrato" → editável, mas com ressalva.
+  assert.equal(modeOf('atualizacaoMonetaria'), 'condicional')
+  assert.equal(modeOf('multa'), 'condicional')
+  assert.equal(isReviewFieldEditable('multa'), true)
+
+  // Pode corrigir livremente.
+  for (const key of ['qualificacao', 'objeto', 'valor', 'vencimento', 'parcelas', 'meioPagamento', 'prazo']) {
+    assert.equal(modeOf(key), 'editavel', `${key} deveria ser editável`)
+    assert.equal(isReviewFieldEditable(key), true)
+  }
+
+  // Campo desconhecido não é editável.
+  assert.equal(isReviewFieldEditable('inexistente'), false)
+})
+
+test('revisão esconde o representante legal para pessoa física', () => {
+  const pf = reviewFieldsFor({ isPJ: false })
+  const pj = reviewFieldsFor({ isPJ: true })
+  assert.ok(!pf.some((f) => f.key === 'representante'))
+  assert.ok(pj.some((f) => f.key === 'representante'))
 })
 
 test('dashboard não mistura tipos homônimos de grupos jurídicos diferentes', () => {

@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import ClassificationPicker from '../components/ClassificationPicker.jsx'
-import { Button, Card, Field, Input, Textarea } from '../components/ui/index.jsx'
+import { Badge, Button, Card, Field, Input, Textarea } from '../components/ui/index.jsx'
 import { useStore, getParty, saveContract, saveEvent } from '../lib/store.js'
 import { generateContractText } from '../lib/contractGenerator.js'
+import { reviewFieldsFor } from '../lib/contractReview.js'
 import { maskCurrency, parseCurrencyBR } from '../lib/format.js'
 
 export default function NewContract() {
@@ -26,7 +27,9 @@ export default function NewContract() {
     objeto: '',
     comunicacao: ''
   })
-  const [review, setReview] = useState(null) // { contract, text }
+  // Fluxo em etapas: elaboração → revisão dos dados → revisão do texto.
+  const [stage, setStage] = useState('form') // 'form' | 'dados' | 'texto'
+  const [text, setText] = useState('')
   const set = (k, v) => setF((s) => ({ ...s, [k]: v }))
 
   const isPJ = party?.personType === 'PJ'
@@ -37,6 +40,11 @@ export default function NewContract() {
     if (!party) return ''
     return `${party.name}, ${isPJ ? 'CNPJ' : 'CPF'} ${party.doc || '—'}, ${party.address || ''}`.trim()
   }, [party, isPJ])
+
+  const defaultRepresentante = useMemo(
+    () => (party?.repLegal?.nome ? `${party.repLegal.nome}, ${party.repLegal.cargo}` : ''),
+    [party]
+  )
 
   function buildContract() {
     return {
@@ -49,7 +57,7 @@ export default function NewContract() {
       titulo: f.titulo.trim() || `${classe.tipo}${classe.subtipo ? ' · ' + classe.subtipo : ''}`,
       parte: {
         qualificacao: (f.qualificacao || defaultQualificacao).trim(),
-        representante: isPJ ? f.representante.trim() || (party?.repLegal?.nome ? `${party.repLegal.nome}, ${party.repLegal.cargo}` : '') : ''
+        representante: isPJ ? f.representante.trim() || defaultRepresentante : ''
       },
       valor: parseCurrencyBR(f.valor),
       vencimento: f.vencimento,
@@ -63,21 +71,34 @@ export default function NewContract() {
     }
   }
 
-  function gerar(e) {
+  // Vai da elaboração para a revisão dos dados. Materializa os valores
+  // pré-preenchidos para que apareçam explicitamente na conferência.
+  function revisarDados(e) {
     e.preventDefault()
-    const contract = buildContract()
-    setReview({ contract, text: generateContractText(contract, party) })
+    setF((s) => ({
+      ...s,
+      qualificacao: s.qualificacao.trim() || defaultQualificacao,
+      representante: isPJ ? s.representante.trim() || defaultRepresentante : s.representante
+    }))
+    setStage('dados')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  function gerarMinuta() {
+    setText(generateContractText(buildContract(), party))
+    setStage('texto')
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   function confirmar() {
-    const saved = saveContract({ ...review.contract, generatedText: review.text })
-    if (review.contract.vencimento) {
+    const contract = buildContract()
+    const saved = saveContract({ ...contract, generatedText: text })
+    if (contract.vencimento) {
       saveEvent({
         contractId: saved.id,
         partyId: id,
         type: 'vencimento',
-        date: review.contract.vencimento,
+        date: contract.vencimento,
         urgency: 'media',
         note: 'Vencimento do contrato'
       })
@@ -87,26 +108,58 @@ export default function NewContract() {
 
   if (!party) return <p className="text-white/60">Cadastro não encontrado.</p>
 
-  // ---- Tela de revisão (processo de revisão antes de finalizar) ----
-  if (review) {
+  // ---- Revisão do texto (minuta gerada, antes de salvar) ----
+  if (stage === 'texto') {
     return (
       <div>
-        <h1 className="text-2xl font-bold">Revisão do contrato</h1>
+        <h1 className="text-2xl font-bold">Revisão do texto</h1>
         <p className="mt-1 text-sm text-white/50">
-          Confira a minuta gerada antes de salvar. Você pode voltar e ajustar os campos.
+          Confira a minuta gerada antes de salvar. Você pode voltar e ajustar os dados.
         </p>
         <Card className="mt-6">
           <textarea
-            value={review.text}
-            onChange={(e) => setReview((r) => ({ ...r, text: e.target.value }))}
+            aria-label="Texto da minuta"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
             className="h-[28rem] w-full rounded-xl border border-white/10 bg-black/40 p-4 text-sm leading-relaxed text-white/80"
           />
         </Card>
         <div className="mt-5 flex flex-wrap justify-end gap-3">
-          <Button variant="ghost" onClick={() => setReview(null)}>
-            ← Voltar e editar
+          <Button variant="ghost" onClick={() => setStage('dados')}>
+            ← Voltar aos dados
           </Button>
           <Button onClick={confirmar}>Confirmar e salvar</Button>
+        </div>
+      </div>
+    )
+  }
+
+  // ---- Revisão dos dados (conferência campo a campo antes de gerar) ----
+  if (stage === 'dados') {
+    const fields = reviewFieldsFor({ isPJ })
+    return (
+      <div>
+        <h1 className="text-2xl font-bold">Revisão dos dados</h1>
+        <p className="mt-1 text-sm text-white/50">
+          Confira as informações do contrato e ajuste o que for necessário antes de gerar a minuta.
+          Campos assinalados como <span className="text-white/70">travados</span> aparecem apenas para
+          leitura.
+        </p>
+        <Card className="mt-6 space-y-4">
+          {fields.map((field) => (
+            <ReviewField
+              key={field.key}
+              field={field}
+              value={f[field.key]}
+              onChange={(v) => set(field.key, v)}
+            />
+          ))}
+        </Card>
+        <div className="mt-5 flex flex-wrap justify-end gap-3">
+          <Button variant="ghost" onClick={() => setStage('form')}>
+            ← Voltar à elaboração
+          </Button>
+          <Button onClick={gerarMinuta}>Gerar minuta →</Button>
         </div>
       </div>
     )
@@ -121,7 +174,7 @@ export default function NewContract() {
       <h1 className="mt-3 text-2xl font-bold">Novo contrato — elaboração</h1>
       <p className="mt-1 text-sm text-white/50">Cliente: {party.name}</p>
 
-      <form onSubmit={gerar} className="mt-6 space-y-6">
+      <form onSubmit={revisarDados} className="mt-6 space-y-6">
         <Card>
           <ClassificationPicker value={classe} onChange={setClasse} />
         </Card>
@@ -144,7 +197,7 @@ export default function NewContract() {
               <Input
                 value={f.representante}
                 onChange={(e) => set('representante', e.target.value)}
-                placeholder={party.repLegal?.nome ? `${party.repLegal.nome}, ${party.repLegal.cargo}` : 'Nome, cargo, CPF'}
+                placeholder={defaultRepresentante || 'Nome, cargo, CPF'}
               />
             </Field>
           )}
@@ -192,10 +245,41 @@ export default function NewContract() {
             Cancelar
           </Button>
           <Button type="submit" disabled={!classe.tipo}>
-            Gerar →
+            Revisar dados →
           </Button>
         </div>
       </form>
     </div>
+  )
+}
+
+// Renderiza um campo na tela de revisão respeitando a regra de edição da
+// Fernanda: travado vira apenas leitura; condicional ganha uma ressalva.
+function ReviewField({ field, value, onChange }) {
+  const locked = field.mode === 'travado'
+  const hint =
+    field.mode === 'condicional' ? 'Depende do contrato — ajuste apenas se aplicável.' : undefined
+
+  return (
+    <Field label={field.label} hint={hint}>
+      {locked ? (
+        <>
+          <Badge tone="gray" className="mb-1.5">Somente conferência</Badge>
+          <div className="min-h-[44px] w-full whitespace-pre-wrap rounded-xl border border-white/10 bg-black/20 px-3.5 py-2.5 text-sm text-white/60">
+            {value?.toString().trim() || '—'}
+          </div>
+        </>
+      ) : field.control === 'textarea' ? (
+        <Textarea value={value} onChange={(e) => onChange(e.target.value)} />
+      ) : field.control === 'currency' ? (
+        <Input value={value} onChange={(e) => onChange(maskCurrency(e.target.value))} inputMode="numeric" placeholder="0,00" />
+      ) : field.control === 'date' ? (
+        <Input type="date" value={value} onChange={(e) => onChange(e.target.value)} />
+      ) : field.control === 'number' ? (
+        <Input type="number" min="1" value={value} onChange={(e) => onChange(e.target.value)} />
+      ) : (
+        <Input value={value} onChange={(e) => onChange(e.target.value)} />
+      )}
+    </Field>
   )
 }

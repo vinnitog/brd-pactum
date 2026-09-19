@@ -8,6 +8,7 @@ const storeMocks = vi.hoisted(() => ({
   deleteEvent: vi.fn(),
   getContract: vi.fn(() => null),
   getParty: vi.fn(() => null),
+  saveContract: vi.fn(() => ({ id: 'contract-1' })),
   saveEvent: vi.fn(),
   toggleEventDone: vi.fn(),
   useStore: vi.fn((selector) => selector({ events: [] }))
@@ -15,9 +16,11 @@ const storeMocks = vi.hoisted(() => ({
 
 vi.mock('../src/lib/store.js', () => storeMocks)
 
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import AgendaList from '../src/components/AgendaList.jsx'
 import EventFormModal from '../src/components/EventFormModal.jsx'
 import Modal from '../src/components/Modal.jsx'
+import NewContract from '../src/pages/NewContract.jsx'
 
 function ModalHarness({ children }) {
   const [open, setOpen] = useState(false)
@@ -114,6 +117,62 @@ describe('Modal acessível', () => {
     expect(screen.queryByRole('dialog')).toBeNull()
     expect(document.body.style.overflow).toBe('scroll')
     expect(document.activeElement).toBe(trigger)
+  })
+})
+
+describe('revisão de dados do contrato (Issue #4)', () => {
+  function renderNewContract() {
+    storeMocks.getParty.mockReturnValue({
+      id: 'p1',
+      name: 'Cliente X',
+      personType: 'PF',
+      doc: '111',
+      address: 'Rua A'
+    })
+    render(
+      <MemoryRouter initialEntries={['/novo/p1']}>
+        <Routes>
+          <Route path="/novo/:id" element={<NewContract />} />
+          <Route path="/parte/:id" element={<div>Página da parte</div>} />
+        </Routes>
+      </MemoryRouter>
+    )
+  }
+
+  function preencherEIrParaRevisao() {
+    fireEvent.change(screen.getByLabelText('Classificação'), { target: { value: 'civis' } })
+    fireEvent.change(screen.getByLabelText('Tipo'), { target: { value: 'Prestação de Serviços' } })
+    fireEvent.change(screen.getByLabelText('Valor (R$)'), { target: { value: '150000' } })
+    fireEvent.change(screen.getByLabelText('Comunicação'), { target: { value: 'Somente por e-mail' } })
+    fireEvent.click(screen.getByRole('button', { name: /Revisar dados/ }))
+  }
+
+  it('trava a comunicação e mantém o valor editável na conferência', () => {
+    renderNewContract()
+    preencherEIrParaRevisao()
+
+    expect(screen.getByRole('heading', { name: 'Revisão dos dados' })).toBeTruthy()
+    // Campo travado: aparece só para conferência, sem controle editável.
+    expect(screen.getByText('Somente conferência')).toBeTruthy()
+    expect(screen.getByText('Somente por e-mail')).toBeTruthy()
+    expect(screen.queryByLabelText('Forma de comunicação entre as partes')).toBeNull()
+    // Campo editável mantém o valor preenchido e permite ajuste.
+    expect(screen.getByLabelText('Valor').value).toBe('1.500,00')
+  })
+
+  it('gera a minuta com o valor ajustado na revisão e salva ao confirmar', () => {
+    renderNewContract()
+    preencherEIrParaRevisao()
+
+    fireEvent.change(screen.getByLabelText('Valor'), { target: { value: '200000' } })
+    fireEvent.click(screen.getByRole('button', { name: /Gerar minuta/ }))
+
+    const minuta = screen.getByLabelText('Texto da minuta')
+    expect(minuta.value).toContain('R$ 2.000,00')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmar e salvar' }))
+    expect(storeMocks.saveContract).toHaveBeenCalledOnce()
+    expect(storeMocks.saveContract.mock.calls[0][0].comunicacao).toBe('Somente por e-mail')
   })
 })
 
