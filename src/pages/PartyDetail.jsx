@@ -43,25 +43,25 @@ export default function PartyDetail() {
 
   return (
     <div>
-      <Link to={party.kind === 'cliente' ? '/clientes' : '/fornecedores'} className="text-sm text-white/40 hover:text-white">
+      <Link to={party.kind === 'cliente' ? '/clientes' : '/fornecedores'} className="text-sm text-muted hover:text-white">
         ← {party.kind === 'cliente' ? 'Clientes' : 'Fornecedores'}
       </Link>
 
       <div className="mt-3 mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-2xl font-bold">{party.name}</h1>
             <Badge tone="gray">{party.personType}</Badge>
             <Badge tone={party.kind === 'cliente' ? 'brd' : 'yellow'}>
               {party.kind === 'cliente' ? 'Cliente' : 'Fornecedor'}
             </Badge>
           </div>
-          <p className="mt-1 text-sm text-white/50">{party.doc}</p>
-          <p className="text-sm text-white/40">
+          <p className="mt-1 text-sm text-muted">{party.doc}</p>
+          <p className="text-sm text-muted">
             {[party.email, party.phone].filter(Boolean).join(' · ')}
           </p>
           {party.repLegal?.nome && (
-            <p className="mt-1 text-xs text-white/40">
+            <p className="mt-1 text-xs text-muted">
               Rep. legal: {party.repLegal.nome} ({party.repLegal.cargo})
             </p>
           )}
@@ -82,8 +82,9 @@ export default function PartyDetail() {
           <button
             key={key}
             onClick={() => setTab(key)}
+            aria-pressed={tab === key}
             className={`-mb-px border-b-2 px-4 py-2.5 text-sm font-medium transition ${
-              tab === key ? 'border-brd text-white' : 'border-transparent text-white/50 hover:text-white'
+              tab === key ? 'border-brd text-white' : 'border-transparent text-muted hover:text-white'
             }`}
           >
             {label}
@@ -94,7 +95,7 @@ export default function PartyDetail() {
       {tab === 'contratos' && (
         <div>
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {[
                 ['elaboracao', 'Elaboração'],
                 ['gerenciamento', 'Cadastro de gerenciamento']
@@ -102,8 +103,9 @@ export default function PartyDetail() {
                 <button
                   key={key}
                   onClick={() => setSubTab(key)}
-                  className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
-                    subTab === key ? 'bg-brd/15 text-brd-200' : 'text-white/50 hover:text-white'
+                  aria-pressed={subTab === key}
+                  className={`min-h-11 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                    subTab === key ? 'bg-brd/15 text-brd-200' : 'text-muted hover:text-white'
                   }`}
                 >
                   {label}
@@ -161,12 +163,12 @@ function ContractGrid({ contracts, emptyLabel, onView }) {
             <h3 className="font-semibold text-white">{c.titulo || `${c.tipo}${c.subtipo ? ' · ' + c.subtipo : ''}`}</h3>
             <Badge tone={c.status === 'ativo' ? 'green' : 'gray'}>{c.status}</Badge>
           </div>
-          <p className="mt-1 text-sm text-white/50">
+          <p className="mt-1 text-sm text-muted">
             {c.tipo}
             {c.subtipo ? ` · ${c.subtipo}` : ''}
           </p>
           <div className="mt-4 flex items-center justify-between">
-            <span className="text-xs text-white/40">{c.source === 'manual' ? 'Gerenciamento manual' : 'Elaborado'}</span>
+            <span className="text-xs text-muted">{c.source === 'manual' ? 'Gerenciamento manual' : 'Elaborado'}</span>
             <Button variant="subtle" onClick={() => onView(c)}>
               Ver detalhes →
             </Button>

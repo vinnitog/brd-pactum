@@ -52,6 +52,75 @@ body {
   background-repeat: no-repeat;
 }
 
+/* [UI] Estados de teclado e controles nativos seguem o tema do escritório. */
+:root {
+  color-scheme: dark;
+}
+
+::selection {
+  background: #601BB8;
+  color: #fff;
+}
+
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid #C9A5FE;
+  outline-offset: 4px;
+}
+
+input, textarea {
+  caret-color: #C9A5FE;
+}
+
+h1, h2, h3 {
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+h1 {
+  letter-spacing: -0.025em;
+}
+
+/* [UI] O atalho fica visível apenas durante a navegação por teclado. */
+.skip-link {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 60;
+  transform: translateY(-200%);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #601BB8;
+  color: #fff;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* [UI] A legenda reordena conforme a largura do card, não da janela. */
+.donut-layout {
+  container-type: inline-size;
+}
+
+.donut-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+@container (min-width: 32rem) {
+  .donut-content {
+    flex-direction: row;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .transition, .transition-colors {
+    transition: none;
+  }
+}
+
 /* Scrollbar sutil no tema escuro. */
 * {
   scrollbar-color: #3a3350 transparent;

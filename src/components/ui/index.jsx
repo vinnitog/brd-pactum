@@ -7,27 +7,27 @@ export function cx(...parts) {
 
 export function Button({ as: As = 'button', variant = 'primary', className = '', ...props }) {
   const base =
-    'inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-brd/60 disabled:opacity-50 disabled:pointer-events-none'
+    'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors disabled:opacity-50 disabled:pointer-events-none'
   const variants = {
-    primary: 'bg-brd text-white hover:bg-brd-500 shadow-lg shadow-brd/20',
+    primary: 'bg-brd-500 text-white hover:bg-brd-600',
     ghost: 'bg-white/5 text-white hover:bg-white/10 border border-white/10',
-    subtle: 'bg-transparent text-white/70 hover:text-brd',
-    danger: 'bg-red-500/90 text-white hover:bg-red-500'
+    subtle: 'bg-transparent text-white/70 hover:text-brd-200',
+    danger: 'bg-red-700 text-white hover:bg-red-800'
   }
   return <As className={cx(base, variants[variant], className)} {...props} />
 }
 
-export function Card({ className = '', children, ...props }) {
+export function Card({ as: As = 'div', className = '', children, ...props }) {
   return (
-    <div
+    <As
       className={cx(
-        'rounded-2xl border border-white/10 bg-white/[0.03] p-5 backdrop-blur-sm',
+        'min-w-0 rounded-2xl border border-white/10 bg-surface p-5',
         className
       )}
       {...props}
     >
       {children}
-    </div>
+    </As>
   )
 }
 
@@ -36,14 +36,14 @@ export function Field({ label, hint, error, children, className = '' }) {
     <label className={cx('block', className)}>
       {label && <span className="mb-1.5 block text-sm font-medium text-white/80">{label}</span>}
       {children}
-      {hint && !error && <span className="mt-1 block text-xs text-white/40">{hint}</span>}
+      {hint && !error && <span className="mt-1 block text-xs text-muted">{hint}</span>}
       {error && <span className="mt-1 block text-xs text-red-400">{error}</span>}
     </label>
   )
 }
 
 const controlBase =
-  'w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-brd/60 focus:outline-none focus:ring-2 focus:ring-brd/30'
+  'min-h-11 w-full min-w-0 rounded-xl border border-white/40 bg-control px-3.5 py-2.5 text-sm text-white placeholder:text-muted focus:border-brd-200 disabled:cursor-not-allowed disabled:opacity-50'
 
 export const Input = forwardRef(function Input({ className = '', ...props }, ref) {
   return <input ref={ref} className={cx(controlBase, className)} {...props} />
@@ -55,7 +55,7 @@ export const Textarea = forwardRef(function Textarea({ className = '', ...props 
 
 export const Select = forwardRef(function Select({ className = '', children, ...props }, ref) {
   return (
-    <select ref={ref} className={cx(controlBase, 'appearance-none', className)} {...props}>
+    <select ref={ref} className={cx(controlBase, className)} {...props}>
       {children}
     </select>
   )
@@ -72,7 +72,7 @@ export function Badge({ tone = 'brd', className = '', children }) {
   return (
     <span
       className={cx(
-        'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium',
+        'inline-flex shrink-0 items-center whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-medium tabular-nums',
         tones[tone],
         className
       )}
@@ -86,7 +86,7 @@ export function EmptyState({ title, children }) {
   return (
     <div className="rounded-2xl border border-dashed border-white/12 bg-white/[0.02] px-6 py-12 text-center">
       <p className="text-sm font-semibold text-white/80">{title}</p>
-      {children && <p className="mx-auto mt-1 max-w-md text-sm text-white/50">{children}</p>}
+      {children && <p className="mx-auto mt-1 max-w-md text-sm text-muted">{children}</p>}
     </div>
   )
 }

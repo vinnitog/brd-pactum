@@ -86,7 +86,7 @@ export default function Modal({ title, onClose, children, maxWidth = 'max-w-lg' 
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-white/40 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brd/60"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-muted transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brd/60"
             aria-label="Fechar"
           >
             ✕

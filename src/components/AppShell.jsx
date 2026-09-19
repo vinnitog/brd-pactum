@@ -9,7 +9,7 @@ function NavItem({ to, children, end }) {
       to={to}
       end={end}
       className={({ isActive }) =>
-        `rounded-lg px-3 py-1.5 text-sm font-medium transition ${
+        `inline-flex min-h-11 shrink-0 items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
           isActive ? 'bg-brd/15 text-brd-200' : 'text-white/60 hover:text-white'
         }`
       }
@@ -33,12 +33,13 @@ export default function AppShell({ children }) {
 
   return (
     <div className="min-h-full">
+      <a className="skip-link" href="#main-content">Pular para o conteúdo</a>
       <header className="sticky top-0 z-30 border-b border-white/10 bg-black/70 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
           <Link to="/" className="shrink-0">
             <Logo />
           </Link>
-          <nav className="ml-2 hidden items-center gap-1 md:flex">
+          <nav aria-label="Principal" className="ml-2 hidden items-center gap-1 lg:flex">
             <NavItem to="/" end>
               Início
             </NavItem>
@@ -50,7 +51,7 @@ export default function AppShell({ children }) {
           <div className="ml-auto flex items-center gap-3">
             <div className="hidden text-right sm:block">
               <p className="text-sm font-medium leading-tight text-white">{user?.name}</p>
-              <p className="text-xs capitalize leading-tight text-white/40">{user?.role}</p>
+              <p className="text-xs capitalize leading-tight text-muted">{user?.role}</p>
             </div>
             <div className="grid h-9 w-9 place-items-center rounded-full bg-brd/20 text-sm font-bold text-brd-200">
               {initials}
@@ -60,14 +61,14 @@ export default function AppShell({ children }) {
                 logout()
                 navigate('/login')
               }}
-              className="rounded-lg border border-white/10 px-2.5 py-1.5 text-xs text-white/60 transition hover:text-white"
+              className="min-h-11 rounded-lg border border-white/20 px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/5 hover:text-white"
             >
               Sair
             </button>
           </div>
         </div>
         {/* Nav mobile */}
-        <nav className="flex items-center gap-1 overflow-x-auto border-t border-white/5 px-4 py-2 md:hidden">
+        <nav aria-label="Principal compacta" className="flex items-center gap-1 overflow-x-auto border-t border-white/5 px-4 py-2 lg:hidden">
           <NavItem to="/" end>
             Início
           </NavItem>
@@ -77,7 +78,7 @@ export default function AppShell({ children }) {
           {isAdvogado(user) && <NavItem to="/dashboard">Dashboard</NavItem>}
         </nav>
       </header>
-      <main className="mx-auto w-full max-w-6xl px-4 py-8">{children}</main>
+      <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-6xl scroll-mt-40 px-4 py-8 sm:py-10">{children}</main>
     </div>
   )
 }

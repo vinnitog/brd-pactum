@@ -81,13 +81,13 @@ export default function NewContract() {
       representante: isPJ ? s.representante.trim() || defaultRepresentante : s.representante
     }))
     setStage('dados')
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' })
   }
 
   function gerarMinuta() {
     setText(generateContractText(buildContract(), party))
     setStage('texto')
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' })
   }
 
   function confirmar() {
@@ -113,7 +113,7 @@ export default function NewContract() {
     return (
       <div>
         <h1 className="text-2xl font-bold">Revisão do texto</h1>
-        <p className="mt-1 text-sm text-white/50">
+        <p className="mt-1 text-sm text-muted">
           Confira a minuta gerada antes de salvar. Você pode voltar e ajustar os dados.
         </p>
         <Card className="mt-6">
@@ -121,7 +121,7 @@ export default function NewContract() {
             aria-label="Texto da minuta"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            className="h-[28rem] w-full rounded-xl border border-white/10 bg-black/40 p-4 text-sm leading-relaxed text-white/80"
+            className="h-[28rem] w-full rounded-xl border border-white/40 bg-control p-4 text-base leading-relaxed text-white/90"
           />
         </Card>
         <div className="mt-5 flex flex-wrap justify-end gap-3">
@@ -140,7 +140,7 @@ export default function NewContract() {
     return (
       <div>
         <h1 className="text-2xl font-bold">Revisão dos dados</h1>
-        <p className="mt-1 text-sm text-white/50">
+        <p className="mt-1 text-sm text-muted">
           Confira as informações do contrato e ajuste o que for necessário antes de gerar a minuta.
           Campos assinalados como <span className="text-white/70">travados</span> aparecem apenas para
           leitura.
@@ -168,18 +168,20 @@ export default function NewContract() {
   // ---- Formulário de elaboração ----
   return (
     <div>
-      <Link to={`/parte/${id}`} className="text-sm text-white/40 hover:text-white">
+      <Link to={`/parte/${id}`} className="text-sm text-muted hover:text-white">
         ← {party.name}
       </Link>
       <h1 className="mt-3 text-2xl font-bold">Novo contrato — elaboração</h1>
-      <p className="mt-1 text-sm text-white/50">Cliente: {party.name}</p>
+      <p className="mt-1 text-sm text-muted">Cliente: {party.name}</p>
 
       <form onSubmit={revisarDados} className="mt-6 space-y-6">
         <Card>
+          <h2 className="mb-4 text-lg font-semibold">Classificação do contrato</h2>
           <ClassificationPicker value={classe} onChange={setClasse} />
         </Card>
 
         <Card className="space-y-4">
+          <h2 className="text-lg font-semibold">Partes e objeto</h2>
           <Field label="Título do contrato (opcional)">
             <Input value={f.titulo} onChange={(e) => set('titulo', e.target.value)} placeholder="Gerado automaticamente se vazio" />
           </Field>
@@ -208,6 +210,7 @@ export default function NewContract() {
         </Card>
 
         <Card className="space-y-4">
+          <h2 className="text-lg font-semibold">Condições do contrato</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Field label="Valor (R$)">
               <Input value={f.valor} onChange={(e) => set('valor', maskCurrency(e.target.value))} inputMode="numeric" placeholder="0,00" />
@@ -240,7 +243,8 @@ export default function NewContract() {
           </Field>
         </Card>
 
-        <div className="flex justify-end gap-3">
+        <p className="text-sm text-muted">Na próxima etapa, você poderá conferir os dados antes de gerar a minuta.</p>
+        <div className="flex flex-wrap justify-end gap-3">
           <Button type="button" variant="ghost" onClick={() => navigate(`/parte/${id}`)}>
             Cancelar
           </Button>
