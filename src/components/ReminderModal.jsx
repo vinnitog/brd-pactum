@@ -39,7 +39,7 @@ export default function ReminderModal({ event, party, contract, onClose }) {
         </Button>
       </div>
       {!party?.email && (
-        <p className="mt-2 text-right text-xs text-white/40">Cadastre um e-mail no cliente para envio direto.</p>
+        <p className="mt-2 text-right text-xs text-muted">Cadastre um e-mail no cliente para envio direto.</p>
       )}
     </Modal>
   )

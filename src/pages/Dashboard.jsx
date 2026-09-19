@@ -28,7 +28,7 @@ export default function Dashboard() {
   return (
     <div>
       <h1 className="mb-1 text-2xl font-bold">Dashboard</h1>
-      <p className="mb-6 text-sm text-white/50">Indicadores dos contratos — referência {today.split('-').reverse().join('/')}.</p>
+      <p className="mb-6 text-sm text-muted">Indicadores dos contratos — referência {today.split('-').reverse().join('/')}.</p>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <Card>

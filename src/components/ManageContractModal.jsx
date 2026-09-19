@@ -117,7 +117,7 @@ export default function ManageContractModal({ partyId, onClose }) {
                 <button
                   type="button"
                   onClick={() => setVencimentos((l) => l.filter((_, idx) => idx !== i))}
-                  className="px-2 text-white/40 hover:text-red-400"
+                  className="px-2 text-muted hover:text-red-400"
                   title="Remover"
                 >
                   ✕

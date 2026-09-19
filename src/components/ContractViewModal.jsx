@@ -11,7 +11,7 @@ function Row({ label, value }) {
   if (!value) return null
   return (
     <div className="flex flex-col border-b border-white/5 py-2 sm:flex-row sm:gap-4">
-      <span className="w-48 shrink-0 text-xs uppercase tracking-wide text-white/40">{label}</span>
+      <span className="w-48 shrink-0 text-xs uppercase tracking-wide text-muted">{label}</span>
       <span className="text-sm text-white/80">{value}</span>
     </div>
   )
@@ -34,13 +34,13 @@ export default function ContractViewModal({ contract, onClose }) {
       <div className="mb-4 flex gap-2">
         <button
           onClick={() => setView('dados')}
-          className={`rounded-lg px-3 py-1.5 text-sm ${view === 'dados' ? 'bg-brd/15 text-brd-200' : 'text-white/50'}`}
+          className={`rounded-lg px-3 py-1.5 text-sm ${view === 'dados' ? 'bg-brd/15 text-brd-200' : 'text-muted'}`}
         >
           Dados
         </button>
         <button
           onClick={() => setView('texto')}
-          className={`rounded-lg px-3 py-1.5 text-sm ${view === 'texto' ? 'bg-brd/15 text-brd-200' : 'text-white/50'}`}
+          className={`rounded-lg px-3 py-1.5 text-sm ${view === 'texto' ? 'bg-brd/15 text-brd-200' : 'text-muted'}`}
         >
           Minuta gerada
         </button>

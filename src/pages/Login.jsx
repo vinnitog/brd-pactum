@@ -13,15 +13,15 @@ export default function Login() {
   }
 
   return (
-    <div className="grid min-h-screen place-items-center px-4">
+    <main className="grid min-h-screen place-items-center px-4 py-10">
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center text-center">
           <Logo markSize={44} className="scale-125" />
-          <p className="mt-4 text-sm text-white/50">Serviços + gerenciamento de contratos</p>
+          <p className="mt-4 text-sm text-muted">Serviços + gerenciamento de contratos</p>
         </div>
 
         <Card>
-          <p className="mb-4 text-sm font-medium text-white/80">Entrar como</p>
+          <h1 className="mb-4 text-xl font-bold text-white">Entrar como</h1>
           <div className="space-y-2">
             {DEMO_ACCOUNTS.map((acc) => (
               <button
@@ -31,7 +31,7 @@ export default function Login() {
               >
                 <span>
                   <span className="block text-sm font-semibold text-white">{acc.name}</span>
-                  <span className="block text-xs capitalize text-white/40">
+                  <span className="block text-xs capitalize text-muted">
                     {acc.role === 'advogado' ? 'Advogado BRD · acesso total' : 'Cliente · acesso ao próprio cadastro'}
                   </span>
                 </span>
@@ -39,11 +39,11 @@ export default function Login() {
               </button>
             ))}
           </div>
-          <p className="mt-4 text-center text-xs text-white/30">
+          <p className="mt-4 text-center text-xs text-muted">
             Contas de demonstração. A autenticação real (Supabase) entra na próxima fase.
           </p>
         </Card>
       </div>
-    </div>
+    </main>
   )
 }

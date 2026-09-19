@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext.jsx'
 import { visibleParties } from '../lib/permissions.js'
 import { useStore } from '../lib/store.js'
 import AgendaList from '../components/AgendaList.jsx'
-import { formatDateBR } from '../lib/format.js'
+import { formatDateBR, todayLocalISO } from '../lib/format.js'
 import { isValidLocalISO } from '../lib/deadlines.js'
 
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
@@ -20,6 +20,12 @@ export default function Agenda() {
   const [mode, setMode] = useState('agenda') // agenda (calendário) | lista
   const [cursor, setCursor] = useState(() => new Date())
   const [selectedDay, setSelectedDay] = useState(null)
+  const today = todayLocalISO()
+
+  function changeMonth(offset) {
+    setCursor(new Date(year, month + offset, 1))
+    setSelectedDay(null)
+  }
 
   const visibleIds = useMemo(() => new Set(visibleParties(user, parties).map((p) => p.id)), [user, parties])
   const events = useMemo(() => allEvents.filter((e) => visibleIds.has(e.partyId)), [allEvents, visibleIds])
@@ -54,7 +60,7 @@ export default function Agenda() {
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Agenda</h1>
-          <p className="text-sm text-white/50">Vencimentos, atualizações e mudanças de qualificação.</p>
+          <p className="text-sm text-muted">Vencimentos, atualizações e mudanças de qualificação.</p>
         </div>
         <div className="flex gap-1 rounded-xl border border-white/10 bg-black/30 p-1">
           {[
@@ -64,8 +70,9 @@ export default function Agenda() {
             <button
               key={key}
               onClick={() => setMode(key)}
-              className={`rounded-lg px-4 py-1.5 text-sm font-medium transition ${
-                mode === key ? 'bg-brd/20 text-brd-200' : 'text-white/50 hover:text-white'
+              aria-pressed={mode === key}
+              className={`min-h-11 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                mode === key ? 'bg-brd/20 text-brd-200' : 'text-muted hover:text-white'
               }`}
             >
               {label}
@@ -77,12 +84,13 @@ export default function Agenda() {
       {mode === 'lista' ? (
         <AgendaList events={events} showParty canManage={user?.role === 'advogado'} />
       ) : (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.6fr_1fr]">
-          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+          <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
             <div className="mb-4 flex items-center justify-between">
               <button
-                onClick={() => setCursor(new Date(year, month - 1, 1))}
-                className="rounded-lg px-3 py-1 text-white/60 hover:text-white"
+                onClick={() => changeMonth(-1)}
+                aria-label="Mês anterior"
+                className="min-h-11 min-w-11 rounded-lg px-3 py-2 text-white/70 hover:bg-white/5 hover:text-white"
               >
                 ‹
               </button>
@@ -90,13 +98,14 @@ export default function Agenda() {
                 {MONTHS[month]} {year}
               </h2>
               <button
-                onClick={() => setCursor(new Date(year, month + 1, 1))}
-                className="rounded-lg px-3 py-1 text-white/60 hover:text-white"
+                onClick={() => changeMonth(1)}
+                aria-label="Próximo mês"
+                className="min-h-11 min-w-11 rounded-lg px-3 py-2 text-white/70 hover:bg-white/5 hover:text-white"
               >
                 ›
               </button>
             </div>
-            <div className="grid grid-cols-7 gap-1 text-center text-xs text-white/40">
+            <div className="grid grid-cols-7 gap-1 text-center text-xs text-muted">
               {WEEKDAYS.map((w) => (
                 <div key={w} className="py-1">
                   {w}
@@ -113,13 +122,16 @@ export default function Agenda() {
                   <button
                     key={i}
                     onClick={() => setSelectedDay(iso)}
-                    className={`flex aspect-square flex-col items-center justify-center rounded-lg border text-sm transition ${
-                      active ? 'border-brd bg-brd/15 text-white' : 'border-transparent hover:bg-white/5 text-white/80'
+                    aria-label={`${formatDateBR(iso)}: ${evs.length} evento${evs.length === 1 ? '' : 's'}`}
+                    aria-pressed={active}
+                    aria-current={iso === today ? 'date' : undefined}
+                    className={`flex min-h-11 min-w-0 flex-col items-center justify-center rounded-lg border py-2 text-sm tabular-nums transition-colors sm:aspect-square ${
+                      active ? 'border-brd-200 bg-brd-600 text-white' : iso === today ? 'border-brd/60 text-brd-200 hover:bg-white/5' : 'border-transparent hover:bg-white/5 text-white/80'
                     }`}
                   >
                     <span>{d}</span>
                     {evs.length > 0 && (
-                      <span className="mt-0.5 flex gap-0.5">
+                      <span aria-hidden="true" className="mt-0.5 flex gap-0.5">
                         {evs.slice(0, 3).map((e, idx) => (
                           <span key={idx} className={`h-1.5 w-1.5 rounded-full ${URG_DOT[e.urgency] || URG_DOT.baixa}`} />
                         ))}
@@ -129,16 +141,24 @@ export default function Agenda() {
                 )
               })}
             </div>
+            <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-white/10 pt-4 text-xs text-muted" aria-label="Urgência dos eventos">
+              {Object.entries({ alta: 'Alta', media: 'Média', baixa: 'Baixa' }).map(([key, label]) => (
+                <span key={key} className="inline-flex items-center gap-2">
+                  <span aria-hidden="true" className={`h-2 w-2 rounded-full ${URG_DOT[key]}`} />
+                  {label}
+                </span>
+              ))}
+            </div>
           </div>
 
-          <div>
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-white/50">
+          <div className="min-w-0">
+            <h2 aria-live="polite" className="mb-3 text-lg font-semibold text-white">
               {selectedDay ? formatDateBR(selectedDay) : 'Selecione um dia'}
-            </h3>
+            </h2>
             {selectedDay ? (
               <AgendaList events={selectedEvents} showParty canManage={user?.role === 'advogado'} />
             ) : (
-              <p className="text-sm text-white/40">Clique em um dia com marcações para ver os vencimentos.</p>
+              <p className="text-sm text-muted">Clique em um dia com marcações para ver os vencimentos.</p>
             )}
           </div>
         </div>

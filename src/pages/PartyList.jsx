@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext.jsx'
 import { canManage, visibleParties } from '../lib/permissions.js'
 import { useStore } from '../lib/store.js'
-import { Button, Card, Input, Badge, EmptyState } from '../components/ui/index.jsx'
+import { Button, Card, Input, Field, Badge, EmptyState } from '../components/ui/index.jsx'
 import PartyFormModal from '../components/PartyFormModal.jsx'
 
 const LABELS = {
@@ -33,7 +33,7 @@ export default function PartyList({ kind }) {
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">{meta.title}</h1>
-          <p className="text-sm text-white/50">
+          <p className="text-sm text-muted">
             Selecione um {meta.singular} para ver contratos e agenda.
           </p>
         </div>
@@ -42,34 +42,33 @@ export default function PartyList({ kind }) {
         )}
       </div>
 
-      <div className="mb-5 max-w-md">
+      <Field label={`Pesquisar ${meta.title.toLowerCase()}`} className="mb-5 max-w-md">
         <Input
+          type="search"
           placeholder={`Pesquisar ${meta.singular} por nome ou documento…`}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-      </div>
+      </Field>
 
       {list.length === 0 ? (
-        <EmptyState title={meta.empty}>
-          {canManage(user) && `Use o botão "Novo ${meta.singular}" para cadastrar.`}
+        <EmptyState title={query.trim() ? 'Nenhum resultado encontrado.' : meta.empty}>
+          {query.trim() ? 'Tente outro nome ou documento, ou limpe a pesquisa.' : canManage(user) && `Use o botão "Novo ${meta.singular}" para cadastrar.`}
         </EmptyState>
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((p) => {
             const count = contracts.filter((c) => c.partyId === p.id).length
             return (
-              <Card key={p.id} className="transition hover:border-brd/40">
-                <Link to={`/parte/${p.id}`} className="block">
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-semibold text-white">{p.name}</h3>
-                    <Badge tone="gray">{p.personType}</Badge>
-                  </div>
-                  <p className="mt-1 text-sm text-white/50">{p.doc}</p>
-                  <p className="mt-3 text-xs text-white/40">
-                    {count} contrato{count === 1 ? '' : 's'}
-                  </p>
-                </Link>
+              <Card as={Link} to={`/parte/${p.id}`} key={p.id} className="block transition-colors hover:border-brd/50 hover:bg-brd/5">
+                <div className="flex items-start justify-between gap-2">
+                  <h2 className="font-semibold text-white">{p.name}</h2>
+                  <Badge tone="gray">{p.personType}</Badge>
+                </div>
+                <p className="mt-1 text-sm text-muted">{p.doc}</p>
+                <p className="mt-3 text-xs text-muted">
+                  {count} contrato{count === 1 ? '' : 's'}
+                </p>
               </Card>
             )
           })}

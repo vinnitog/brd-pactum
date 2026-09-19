@@ -4,6 +4,9 @@ export default {
   theme: {
     extend: {
       colors: {
+        muted: '#ABA3B9',
+        surface: '#181320',
+        control: '#0F0C16',
         brd: {
           DEFAULT: '#964AFB',
           50: '#F3EBFF',
