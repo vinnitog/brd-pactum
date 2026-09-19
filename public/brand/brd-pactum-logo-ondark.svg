@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 436 120" role="img" aria-label="BRD pactum">
+  <!-- Fundo da marca (#0B0911) para o lockup ser legivel sozinho em qualquer visualizador. -->
+  <rect width="436" height="120" rx="20" fill="#0B0911"/>
+  <g transform="translate(32,28)">
+    <rect width="64" height="64" rx="14" fill="#0B0911"/>
+    <path fill="#964AFB" d="M18 14h16.5c6 0 10 3.2 10 8.3 0 3.3-1.9 5.8-5 7 3.8 1 6.1 3.8 6.1 7.6 0 5.6-4.4 9.1-11.2 9.1H18V14zm8.6 6.4v6.5h6.2c2.6 0 4.1-1.2 4.1-3.3s-1.5-3.2-4.1-3.2h-6.2zm0 12.4v6.8h6.7c2.8 0 4.4-1.3 4.4-3.4 0-2.2-1.6-3.4-4.4-3.4h-6.7z"/>
+    <rect x="18" y="26.6" width="9" height="3.4" rx="1.7" fill="#0B0911"/>
+    <text x="82" y="43" font-family="DM Sans, Helvetica, Arial, sans-serif" font-size="34" font-weight="700" letter-spacing="-0.6">
+      <tspan fill="#964AFB">B</tspan><tspan fill="#FFFFFF">RD</tspan><tspan dx="9" font-weight="500" font-style="italic" fill="#FFFFFF" fill-opacity="0.7">pactum.</tspan>
+    </text>
+  </g>
+</svg>
