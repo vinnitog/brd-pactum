@@ -1,6 +1,6 @@
 // Gráfico de rosca (donut) em SVG puro — sem dependências. Estilo semelhante
 // ao "integra": segmentos coloridos + legenda + percentuais.
-export default function Donut({ segments, size = 190, thickness = 26, centerLabel }) {
+export default function Donut({ segments, size = 190, thickness = 26, centerLabel, emptyMessage = 'Sem dados para exibir.' }) {
   const data = segments.filter((s) => s.value > 0)
   const total = data.reduce((a, s) => a + s.value, 0)
   const r = (size - thickness) / 2
@@ -43,7 +43,7 @@ export default function Donut({ segments, size = 190, thickness = 26, centerLabe
         </div>
 
         <ul className="w-full min-w-0 space-y-3">
-          {data.length === 0 && <li className="text-sm text-muted">Sem dados.</li>}
+          {data.length === 0 && <li className="text-sm text-muted">{emptyMessage}</li>}
           {data.map((s, i) => {
             const pct = total > 0 ? Math.round((s.value / total) * 100) : 0
             return (
