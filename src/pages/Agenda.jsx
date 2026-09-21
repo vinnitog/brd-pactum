@@ -3,6 +3,8 @@ import { useAuth } from '../contexts/AuthContext.jsx'
 import { visibleParties, canManage } from '../lib/permissions.js'
 import { useStore } from '../lib/store.js'
 import AgendaList from '../components/AgendaList.jsx'
+import EventFormModal from '../components/EventFormModal.jsx'
+import { Button, Field, Select } from '../components/ui/index.jsx'
 import { formatDateBR, todayLocalISO } from '../lib/format.js'
 import { isValidLocalISO } from '../lib/deadlines.js'
 
@@ -16,19 +18,60 @@ const URG_DOT = { alta: 'bg-urg-alta', media: 'bg-urg-media', baixa: 'bg-urg-bai
 export default function Agenda() {
   const { user } = useAuth()
   const parties = useStore((s) => s.parties)
+  const allContracts = useStore((s) => s.contracts)
   const allEvents = useStore((s) => s.events)
   const [mode, setMode] = useState('agenda') // agenda (calendário) | lista
   const [cursor, setCursor] = useState(() => new Date())
   const [selectedDay, setSelectedDay] = useState(null)
   const today = todayLocalISO()
 
+  // Filtros combináveis por tipo e por parte (decisão dos sócios: cumulativos,
+  // um cliente E/OU um fornecedor ao mesmo tempo). "todos"/"todas" = sem filtro.
+  const [kind, setKind] = useState('todos')
+  const [partyFilter, setPartyFilter] = useState('todas')
+
+  // Estado do formulário de evento: null = fechado; { event: null } = novo;
+  // { event } = edição de um evento existente.
+  const [editor, setEditor] = useState(null)
+
   function changeMonth(offset) {
     setCursor(new Date(year, month + offset, 1))
     setSelectedDay(null)
   }
 
-  const visibleIds = useMemo(() => new Set(visibleParties(user, parties).map((p) => p.id)), [user, parties])
-  const events = useMemo(() => allEvents.filter((e) => visibleIds.has(e.partyId)), [allEvents, visibleIds])
+  const visible = useMemo(() => visibleParties(user, parties), [user, parties])
+  const visibleById = useMemo(() => new Map(visible.map((p) => [p.id, p])), [visible])
+  const manage = canManage(user)
+  // Filtros só fazem sentido para quem enxerga mais de uma parte (equipe do BRD).
+  const showFilters = visible.length > 1
+
+  const filterParties = useMemo(
+    () => (kind === 'todos' ? visible : visible.filter((p) => p.kind === kind)),
+    [visible, kind]
+  )
+
+  function changeKind(next) {
+    setKind(next)
+    // Se a parte escolhida não pertence mais ao tipo filtrado, volta para "todas".
+    if (next !== 'todos' && visibleById.get(partyFilter)?.kind !== next) setPartyFilter('todas')
+  }
+
+  const events = useMemo(
+    () =>
+      allEvents.filter((e) => {
+        const party = visibleById.get(e.partyId)
+        if (!party) return false
+        if (kind !== 'todos' && party.kind !== kind) return false
+        if (partyFilter !== 'todas' && e.partyId !== partyFilter) return false
+        return true
+      }),
+    [allEvents, visibleById, kind, partyFilter]
+  )
+
+  const visibleContracts = useMemo(
+    () => allContracts.filter((c) => visibleById.has(c.partyId)),
+    [allContracts, visibleById]
+  )
 
   const year = cursor.getFullYear()
   const month = cursor.getMonth()
@@ -54,6 +97,8 @@ export default function Agenda() {
   }, [year, month])
 
   const selectedEvents = selectedDay ? byDay[selectedDay] || [] : []
+  const onEdit = manage ? (ev) => setEditor({ event: ev }) : undefined
+  const filtroAtivo = kind !== 'todos' || partyFilter !== 'todas'
 
   return (
     <div>
@@ -62,27 +107,69 @@ export default function Agenda() {
           <h1 className="text-2xl font-bold">Agenda</h1>
           <p className="text-sm text-muted">Vencimentos, atualizações e mudanças de qualificação.</p>
         </div>
-        <div className="flex gap-1 rounded-xl border border-white/10 bg-black/30 p-1">
-          {[
-            ['agenda', 'Agenda'],
-            ['lista', 'Lista']
-          ].map(([key, label]) => (
-            <button
-              key={key}
-              onClick={() => setMode(key)}
-              aria-pressed={mode === key}
-              className={`min-h-11 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                mode === key ? 'bg-brd/20 text-brd-200' : 'text-muted hover:text-white'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-3">
+          {manage && (
+            <Button onClick={() => setEditor({ event: null })}>+ Novo evento</Button>
+          )}
+          <div className="flex gap-1 rounded-xl border border-white/10 bg-black/30 p-1">
+            {[
+              ['agenda', 'Agenda'],
+              ['lista', 'Lista']
+            ].map(([key, label]) => (
+              <button
+                key={key}
+                onClick={() => setMode(key)}
+                aria-pressed={mode === key}
+                className={`min-h-11 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  mode === key ? 'bg-brd/20 text-brd-200' : 'text-muted hover:text-white'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
+      {showFilters && (
+        <section aria-label="Filtros" className="mb-6 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="Tipo de parte">
+              <Select value={kind} onChange={(e) => changeKind(e.target.value)}>
+                <option value="todos">Clientes e fornecedores</option>
+                <option value="cliente">Clientes</option>
+                <option value="fornecedor">Fornecedores</option>
+              </Select>
+            </Field>
+            <Field label="Parte">
+              <Select value={partyFilter} onChange={(e) => setPartyFilter(e.target.value)}>
+                <option value="todas">Todos</option>
+                {filterParties.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          </div>
+          {filtroAtivo && (
+            <div className="mt-4 flex justify-end">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setKind('todos')
+                  setPartyFilter('todas')
+                }}
+              >
+                Limpar filtros
+              </Button>
+            </div>
+          )}
+        </section>
+      )}
+
       {mode === 'lista' ? (
-        <AgendaList events={events} showParty canManage={canManage(user)} />
+        <AgendaList events={events} showParty canManage={manage} onEdit={onEdit} />
       ) : (
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
           <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
@@ -156,12 +243,25 @@ export default function Agenda() {
               {selectedDay ? formatDateBR(selectedDay) : 'Selecione um dia'}
             </h2>
             {selectedDay ? (
-              <AgendaList events={selectedEvents} showParty canManage={canManage(user)} />
+              <AgendaList events={selectedEvents} showParty canManage={manage} onEdit={onEdit} />
             ) : (
               <p className="text-sm text-muted">Clique em um dia com marcações para ver os vencimentos.</p>
             )}
           </div>
         </div>
+      )}
+
+      {editor && (
+        <EventFormModal
+          event={editor.event}
+          parties={visible}
+          contracts={
+            editor.event
+              ? visibleContracts.filter((c) => c.partyId === editor.event.partyId)
+              : visibleContracts
+          }
+          onClose={() => setEditor(null)}
+        />
       )}
     </div>
   )

@@ -452,6 +452,117 @@ describe('navegação acessível da agenda', () => {
   })
 })
 
+describe('agenda: filtros e criação/edição (Issue #10)', () => {
+  // Referência 2028-02-15 (beforeEach). party-1/party-2 = clientes, party-3 = fornecedor.
+  function mixedEvents() {
+    return [
+      event({ id: 'ev-ana', partyId: 'party-1', note: 'Prazo Ana' }),
+      event({ id: 'ev-bruno', partyId: 'party-2', note: 'Prazo Bruno' }),
+      event({ id: 'ev-forn', partyId: 'party-3', note: 'Prazo Fornecedor' })
+    ]
+  }
+
+  it('filtra por tipo de parte mantendo apenas clientes ou fornecedores', () => {
+    state.events = mixedEvents()
+    renderPage(<Agenda />)
+    fireEvent.click(screen.getByRole('button', { name: 'Lista', exact: true }))
+    expect(screen.getByText(/Prazo Ana/)).toBeTruthy()
+    expect(screen.getByText(/Prazo Fornecedor/)).toBeTruthy()
+
+    fireEvent.change(screen.getByRole('combobox', { name: 'Tipo de parte' }), { target: { value: 'fornecedor' } })
+    expect(screen.getByText(/Prazo Fornecedor/)).toBeTruthy()
+    expect(screen.queryByText(/Prazo Ana/)).toBeNull()
+    expect(screen.queryByText(/Prazo Bruno/)).toBeNull()
+  })
+
+  it('filtra por uma parte específica de forma cumulativa com o tipo', () => {
+    state.events = mixedEvents()
+    renderPage(<Agenda />)
+    fireEvent.click(screen.getByRole('button', { name: 'Lista', exact: true }))
+
+    fireEvent.change(screen.getByRole('combobox', { name: 'Parte' }), { target: { value: 'party-2' } })
+    expect(screen.getByText(/Prazo Bruno/)).toBeTruthy()
+    expect(screen.queryByText(/Prazo Ana/)).toBeNull()
+    expect(screen.queryByText(/Prazo Fornecedor/)).toBeNull()
+  })
+
+  it('não exibe filtros para o cliente que enxerga apenas a própria parte', () => {
+    authMocks.useAuth.mockReturnValue({ user: client })
+    state.events = [event({ note: 'Prazo próprio' })]
+    renderPage(<Agenda />)
+    expect(screen.queryByRole('combobox', { name: 'Tipo de parte' })).toBeNull()
+    expect(screen.queryByRole('combobox', { name: 'Parte' })).toBeNull()
+  })
+
+  it('ao mudar o tipo de parte, descarta a parte selecionada incompatível', () => {
+    state.events = mixedEvents()
+    renderPage(<Agenda />)
+    fireEvent.click(screen.getByRole('button', { name: 'Lista', exact: true }))
+
+    fireEvent.change(screen.getByRole('combobox', { name: 'Parte' }), { target: { value: 'party-3' } })
+    expect(screen.queryByText(/Prazo Ana/)).toBeNull()
+    fireEvent.change(screen.getByRole('combobox', { name: 'Tipo de parte' }), { target: { value: 'cliente' } })
+
+    expect(screen.getByRole('combobox', { name: 'Parte' }).value).toBe('todas')
+    expect(screen.getByText(/Prazo Ana/)).toBeTruthy()
+    expect(screen.getByText(/Prazo Bruno/)).toBeTruthy()
+    expect(screen.queryByText(/Prazo Fornecedor/)).toBeNull()
+  })
+
+  it('permite ao advogado criar um evento escolhendo a parte na agenda', () => {
+    state.events = []
+    renderPage(<Agenda />)
+    fireEvent.click(screen.getByRole('button', { name: '+ Novo evento' }))
+
+    const dialog = screen.getByRole('dialog', { name: 'Novo vencimento na agenda' })
+    fireEvent.change(within(dialog).getByRole('combobox', { name: 'Cliente / fornecedor' }), { target: { value: 'party-3' } })
+    fireEvent.change(within(dialog).getByLabelText('Data'), { target: { value: '2028-05-10' } })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Adicionar' }))
+
+    expect(storeMocks.saveEvent).toHaveBeenCalledOnce()
+    expect(storeMocks.saveEvent.mock.calls[0][0]).toMatchObject({ partyId: 'party-3', date: '2028-05-10' })
+  })
+
+  it('não oferece criação de evento para o estagiário', () => {
+    authMocks.useAuth.mockReturnValue({ user: intern })
+    state.events = mixedEvents()
+    renderPage(<Agenda />)
+    expect(screen.queryByRole('button', { name: '+ Novo evento' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Lista', exact: true }))
+    expect(screen.queryByRole('button', { name: 'Editar evento' })).toBeNull()
+  })
+
+  it('edita um evento existente a partir da lista da agenda', () => {
+    state.events = [event({ id: 'ev-ana', partyId: 'party-1', note: 'Prazo Ana' })]
+    renderPage(<Agenda />)
+    fireEvent.click(screen.getByRole('button', { name: 'Lista', exact: true }))
+    fireEvent.click(screen.getByRole('button', { name: 'Editar evento' }))
+
+    const dialog = screen.getByRole('dialog', { name: 'Editar vencimento na agenda' })
+    // Em edição a parte é fixa: sem seletor de parte no formulário.
+    expect(within(dialog).queryByRole('combobox', { name: 'Cliente / fornecedor' })).toBeNull()
+    fireEvent.change(within(dialog).getByLabelText('Observação'), { target: { value: 'Prazo revisado' } })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Salvar' }))
+
+    expect(storeMocks.saveEvent).toHaveBeenCalledOnce()
+    expect(storeMocks.saveEvent.mock.calls[0][0]).toMatchObject({ id: 'ev-ana', note: 'Prazo revisado' })
+  })
+
+  it('oferece os tipos de data relevantes decididos pelos sócios', () => {
+    render(<EventFormModal partyId="party-1" onClose={vi.fn()} />)
+    const tipo = screen.getByRole('combobox', { name: 'Tipo de vencimento' })
+    for (const label of ['Assinatura', 'Renovação automática', 'Revisão']) {
+      expect(within(tipo).getByRole('option', { name: label })).toBeTruthy()
+    }
+  })
+
+  it('regressão: formulário com parte fixa não mostra seletor de parte', () => {
+    render(<EventFormModal partyId="party-1" contracts={[]} onClose={vi.fn()} />)
+    expect(screen.queryByRole('combobox', { name: 'Cliente / fornecedor' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Adicionar' })).toBeTruthy()
+  })
+})
+
 describe('dados textuais dos gráficos', () => {
   it('apresenta rótulo, valor e percentual juntos sem depender de cor', () => {
     render(<Donut segments={[
