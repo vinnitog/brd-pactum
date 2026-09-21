@@ -3,10 +3,15 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 const AuthContext = createContext(null)
 const AUTH_KEY = 'brd-pactum:auth'
 
-// Contas de demonstração. Advogados do BRD têm acesso total; cada conta de
-// cliente é vinculada a um party (cadastro) e só enxerga o próprio conteúdo.
+// Contas de demonstração, uma por perfil de acesso (Issue #8). A equipe interna
+// do BRD enxerga todos os cadastros; cada conta de cliente é vinculada a um party
+// (cadastro) e só enxerga o próprio conteúdo. O sócio patrimonial (patrimonial:
+// true) é o único que também alcança os dados sensíveis do escritório.
 export const DEMO_ACCOUNTS = [
+  { id: 'u_socio_patrimonial', name: 'Dra. Beatriz Duarte', role: 'socio', patrimonial: true },
+  { id: 'u_socio', name: 'Dr. Rafael Dantas', role: 'socio' },
   { id: 'u_adv', name: 'Dr. Luis Bernardo', role: 'advogado' },
+  { id: 'u_estagiario', name: 'Camila Rocha', role: 'estagiario' },
   { id: 'u_carmello', name: 'João Síndico (Carmello 350)', role: 'cliente', partyId: 'party_carmello' },
   { id: 'u_marina', name: 'Marina Alves', role: 'cliente', partyId: 'party_marina' }
 ]

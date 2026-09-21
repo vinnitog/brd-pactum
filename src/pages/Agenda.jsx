@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext.jsx'
-import { visibleParties } from '../lib/permissions.js'
+import { visibleParties, canManage } from '../lib/permissions.js'
 import { useStore } from '../lib/store.js'
 import AgendaList from '../components/AgendaList.jsx'
 import { formatDateBR, todayLocalISO } from '../lib/format.js'
@@ -82,7 +82,7 @@ export default function Agenda() {
       </div>
 
       {mode === 'lista' ? (
-        <AgendaList events={events} showParty canManage={user?.role === 'advogado'} />
+        <AgendaList events={events} showParty canManage={canManage(user)} />
       ) : (
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
           <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
@@ -156,7 +156,7 @@ export default function Agenda() {
               {selectedDay ? formatDateBR(selectedDay) : 'Selecione um dia'}
             </h2>
             {selectedDay ? (
-              <AgendaList events={selectedEvents} showParty canManage={user?.role === 'advogado'} />
+              <AgendaList events={selectedEvents} showParty canManage={canManage(user)} />
             ) : (
               <p className="text-sm text-muted">Clique em um dia com marcações para ver os vencimentos.</p>
             )}
