@@ -28,6 +28,7 @@ import Home from '../src/pages/Home.jsx'
 import PartyList from '../src/pages/PartyList.jsx'
 import Agenda from '../src/pages/Agenda.jsx'
 import NewContract from '../src/pages/NewContract.jsx'
+import Dashboard from '../src/pages/Dashboard.jsx'
 
 let state
 const lawyer = { name: 'Dra. Ana', role: 'advogado' }
@@ -472,9 +473,14 @@ describe('dados textuais dos gráficos', () => {
     { caseName: 'zerados', segments: [{ label: 'Ativos', value: 0, color: '#00ff00' }] }
   ])('trata dados $caseName sem percentuais inválidos', ({ segments }) => {
     render(<Donut segments={segments} />)
-    expect(screen.getByText('Sem dados.')).toBeTruthy()
+    expect(screen.getByText('Sem dados para exibir.')).toBeTruthy()
     expect(screen.getByText('0')).toBeTruthy()
     expect(screen.queryByText(/NaN|Infinity|%/)).toBeNull()
+  })
+
+  it('exibe mensagem de vazio personalizada quando fornecida', () => {
+    render(<Donut segments={[]} emptyMessage="Nenhum contrato para os filtros selecionados." />)
+    expect(screen.getByText('Nenhum contrato para os filtros selecionados.')).toBeTruthy()
   })
 })
 
@@ -517,5 +523,58 @@ describe('elaboração e revisão de contrato', () => {
     expect(storeMocks.saveEvent).toHaveBeenCalledOnce()
     expect(storeMocks.saveEvent).toHaveBeenCalledWith(expect.objectContaining({ contractId: 'saved-contract', partyId: 'party-1', date: '2028-03-10' }))
     expect(screen.getByRole('heading', { name: 'Detalhes da parte' })).toBeTruthy()
+  })
+})
+
+describe('Dashboard com filtros', () => {
+  // Data de referência dos testes: 2028-02-15 (fixada no beforeEach).
+  const contracts = [
+    { id: 'c1', status: 'ativo', tipo: 'Locação', valor: 1000, vencimento: '2028-02-15' },
+    { id: 'c2', status: 'ativo', tipo: 'Prestação de Serviços', valor: 2000, vencimento: '2028-07-01' },
+    { id: 'c3', status: 'encerrado', tipo: 'Locação', valor: 500, vencimento: '' }
+  ]
+  const contador = () =>
+    screen.getByText((_, el) => el?.tagName === 'P' && /^\d+ de \d+ contratos?$/.test(el.textContent || ''))
+
+  beforeEach(() => {
+    state.contracts = contracts.map((c) => ({ ...c }))
+  })
+
+  it('exibe os quatro indicadores e conta todos os contratos sem filtro', () => {
+    renderPage(<Dashboard />)
+    for (const titulo of ['Contratos ativos / inativos', 'Valor — ativos / inativos', 'Prazos (vencimentos)', 'Valor por classificação']) {
+      expect(screen.getByRole('heading', { name: titulo })).toBeTruthy()
+    }
+    expect(contador().textContent).toBe('3 de 3 contratos')
+  })
+
+  it('filtra por status reduzindo a contagem', () => {
+    renderPage(<Dashboard />)
+    fireEvent.change(screen.getByRole('combobox', { name: 'Status' }), { target: { value: 'ativos' } })
+    expect(contador().textContent).toBe('2 de 3 contratos')
+  })
+
+  it('combina filtro de status e de classificação (tipo) simultaneamente', () => {
+    renderPage(<Dashboard />)
+    fireEvent.change(screen.getByRole('combobox', { name: 'Status' }), { target: { value: 'ativos' } })
+    fireEvent.change(screen.getByRole('combobox', { name: 'Classificação (tipo)' }), { target: { value: 'Prestação de Serviços' } })
+    expect(contador().textContent).toBe('1 de 3 contratos')
+  })
+
+  it('exibe mensagem quando nenhum contrato atende aos filtros', () => {
+    renderPage(<Dashboard />)
+    fireEvent.change(screen.getByRole('combobox', { name: 'Status' }), { target: { value: 'inativos' } })
+    fireEvent.change(screen.getByRole('combobox', { name: 'Classificação (tipo)' }), { target: { value: 'Prestação de Serviços' } })
+    expect(contador().textContent).toBe('0 de 3 contratos')
+    expect(screen.getByText('Nenhum contrato para os filtros selecionados.')).toBeTruthy()
+  })
+
+  it('limpa os filtros e restaura a contagem total', () => {
+    renderPage(<Dashboard />)
+    fireEvent.change(screen.getByRole('combobox', { name: 'Faixa de prazo' }), { target: { value: 'dia' } })
+    expect(contador().textContent).toBe('1 de 3 contratos')
+    fireEvent.click(screen.getByRole('button', { name: 'Limpar filtros' }))
+    expect(contador().textContent).toBe('3 de 3 contratos')
+    expect(screen.queryByRole('button', { name: 'Limpar filtros' })).toBeNull()
   })
 })
