@@ -6,6 +6,9 @@ import ReminderModal from './ReminderModal.jsx'
 
 const TYPE_LABEL = {
   vencimento: 'Vencimento',
+  assinatura: 'Assinatura',
+  renovacao: 'Renovação automática',
+  revisao: 'Revisão',
   atualizacao: 'Atualização monetária',
   qualificacao: 'Mudança de qualificação',
   outro: 'Outro'
@@ -14,7 +17,7 @@ const TYPE_LABEL = {
 const URG_DOT = { alta: 'bg-urg-alta', media: 'bg-urg-media', baixa: 'bg-urg-baixa' }
 const URG_TONE = { alta: 'red', media: 'yellow', baixa: 'green' }
 
-export default function AgendaList({ events, showParty = true, canManage = false }) {
+export default function AgendaList({ events, showParty = true, canManage = false, onEdit }) {
   // Assina o store para re-renderizar quando um evento é marcado como concluído.
   useStore((s) => s.events)
   const [reminder, setReminder] = useState(null)
@@ -59,6 +62,16 @@ export default function AgendaList({ events, showParty = true, canManage = false
                 </Button>
                 {canManage && (
                   <>
+                    {onEdit && (
+                      <button
+                        onClick={() => onEdit(e)}
+                        className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg px-2 py-1 text-xs text-muted hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brd/60"
+                        title="Editar"
+                        aria-label="Editar evento"
+                      >
+                        ✎
+                      </button>
+                    )}
                     <button
                       onClick={() => toggleEventDone(e.id)}
                       className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg px-2 py-1 text-xs text-muted hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brd/60"
