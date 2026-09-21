@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext.jsx'
-import { isAdvogado, visibleParties } from '../lib/permissions.js'
+import { isEquipeBRD, visibleParties } from '../lib/permissions.js'
 import { useStore } from '../lib/store.js'
 import { Card, Badge, EmptyState } from '../components/ui/index.jsx'
 import { formatDateBR, todayLocalISO } from '../lib/format.js'
@@ -40,7 +40,7 @@ export default function Home() {
     },
     { to: '/agenda', label: 'Agenda', count: upcoming.length, desc: 'Vencimentos, atualizações e lembretes.' }
   ]
-  if (isAdvogado(user)) {
+  if (isEquipeBRD(user)) {
     tiles.push({
       to: '/dashboard',
       label: 'Dashboard',

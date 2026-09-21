@@ -1,6 +1,15 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { visibleParties, canManage, canSeeParty, isAdvogado } from '../src/lib/permissions.js'
+import {
+  visibleParties,
+  canManage,
+  canSeeParty,
+  canSeeSensitive,
+  isAdvogado,
+  isEquipeBRD,
+  isSocioPatrimonial,
+  roleLabel
+} from '../src/lib/permissions.js'
 import { buildReminder } from '../src/lib/reminderTemplate.js'
 import { CONTRACT_GROUPS, findTipo, getContractValuesByType } from '../src/lib/contractTypes.js'
 import { parseCurrencyBR, maskCNPJ } from '../src/lib/format.js'
@@ -9,6 +18,9 @@ import { REVIEW_FIELDS, isReviewFieldEditable, reviewFieldsFor } from '../src/li
 
 const advogado = { id: 'a', role: 'advogado' }
 const cliente = { id: 'c', role: 'cliente', partyId: 'p1' }
+const estagiario = { id: 'e', role: 'estagiario' }
+const socio = { id: 's', role: 'socio' }
+const socioPatrimonial = { id: 'sp', role: 'socio', patrimonial: true }
 const parties = [
   { id: 'p1', kind: 'cliente', name: 'Cliente 1' },
   { id: 'p2', kind: 'cliente', name: 'Cliente 2' }
@@ -27,6 +39,44 @@ test('permissões de gestão e acesso por cadastro', () => {
   assert.ok(!canManage(cliente))
   assert.ok(canSeeParty(cliente, parties[0]))
   assert.ok(!canSeeParty(cliente, parties[1]))
+})
+
+test('estagiário consulta todos os cadastros mas não gerencia', () => {
+  assert.ok(isEquipeBRD(estagiario))
+  assert.equal(visibleParties(estagiario, parties).length, 2)
+  assert.ok(canSeeParty(estagiario, parties[1]))
+  assert.ok(!canManage(estagiario))
+})
+
+test('sócio vê todos os cadastros e gerencia', () => {
+  assert.ok(isEquipeBRD(socio))
+  assert.equal(visibleParties(socio, parties).length, 2)
+  assert.ok(canManage(socio))
+})
+
+test('só o sócio patrimonial alcança os dados sensíveis', () => {
+  assert.ok(canSeeSensitive(socioPatrimonial))
+  assert.ok(isSocioPatrimonial(socioPatrimonial))
+  for (const user of [socio, advogado, estagiario, cliente, null]) {
+    assert.ok(!canSeeSensitive(user))
+  }
+})
+
+test('equipe interna do BRD abrange estagiário, advogado e sócio', () => {
+  for (const user of [estagiario, advogado, socio, socioPatrimonial]) {
+    assert.ok(isEquipeBRD(user))
+  }
+  for (const user of [cliente, null, undefined, {}]) {
+    assert.ok(!isEquipeBRD(user))
+  }
+})
+
+test('roleLabel traz rótulos amigáveis por perfil', () => {
+  assert.equal(roleLabel(cliente), 'Cliente')
+  assert.equal(roleLabel(estagiario), 'Estagiário')
+  assert.equal(roleLabel(advogado), 'Advogado associado')
+  assert.equal(roleLabel(socio), 'Sócio')
+  assert.equal(roleLabel(socioPatrimonial), 'Sócio patrimonial')
 })
 
 test('lembrete usa o modelo do escritório e cita o cliente/contrato', () => {

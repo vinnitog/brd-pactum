@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
+import { isEquipeBRD, canManage } from './lib/permissions.js'
 import Login from './pages/Login.jsx'
 import Home from './pages/Home.jsx'
 import PartyList from './pages/PartyList.jsx'
@@ -47,7 +48,7 @@ export default function App() {
       <Route
         path="/parte/:id/contratos/novo"
         element={
-          <ProtectedRoute requireAdvogado>
+          <ProtectedRoute require={canManage}>
             <NewContract />
           </ProtectedRoute>
         }
@@ -63,7 +64,7 @@ export default function App() {
       <Route
         path="/dashboard"
         element={
-          <ProtectedRoute requireAdvogado>
+          <ProtectedRoute require={isEquipeBRD}>
             <Dashboard />
           </ProtectedRoute>
         }

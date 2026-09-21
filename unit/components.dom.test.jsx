@@ -32,6 +32,7 @@ import NewContract from '../src/pages/NewContract.jsx'
 let state
 const lawyer = { name: 'Dra. Ana', role: 'advogado' }
 const client = { name: 'Ana', role: 'cliente', partyId: 'party-1' }
+const intern = { name: 'Camila Estagiária', role: 'estagiario' }
 
 function renderPage(page) {
   return render(<MemoryRouter>{page}</MemoryRouter>)
@@ -332,6 +333,32 @@ describe('início e cadastros', () => {
       expect(screen.getByRole('link', { name: new RegExp(`^${name} `) }).getAttribute('href')).toBe(destination)
     }
     expect(screen.getByRole('link', { name: /^Dashboard 1 / })).toBeTruthy()
+  })
+
+  it('estagiário enxerga todos os cadastros e o Dashboard, mas não cria clientes', () => {
+    authMocks.useAuth.mockReturnValue({ user: intern })
+    state.contracts = [{ id: 'contract-1', partyId: 'party-1' }]
+    renderPage(<Home />)
+    expect(screen.getByRole('link', { name: /^Dashboard 1 / })).toBeTruthy()
+    expect(screen.getByRole('link', { name: /^Clientes 2 / })).toBeTruthy()
+
+    cleanup()
+    authMocks.useAuth.mockReturnValue({ user: intern })
+    renderPage(<PartyList kind="cliente" />)
+    expect(screen.getByRole('link', { name: /Ana Cliente/ })).toBeTruthy()
+    expect(screen.getByRole('link', { name: /Bruno Cliente/ })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /Novo cliente/ })).toBeNull()
+  })
+
+  it('estagiário vê a agenda de todos os clientes sem ações de gestão', () => {
+    authMocks.useAuth.mockReturnValue({ user: intern })
+    state.events = [event(), event({ id: 'other', partyId: 'party-2', note: 'Prazo do Bruno' })]
+    renderPage(<Agenda />)
+    fireEvent.click(screen.getByRole('button', { name: 'Lista', exact: true }))
+
+    expect(screen.getByText(/Prazo próprio/)).toBeTruthy()
+    expect(screen.getByText(/Prazo do Bruno/)).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /Concluir evento|Reabrir evento|Excluir evento/ })).toBeNull()
   })
 
   it('pesquisa clientes por nome ou documento usando campo rotulado e links corretos', () => {
