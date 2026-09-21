@@ -1,7 +1,23 @@
 import { useNavigate } from 'react-router-dom'
 import { useAuth, DEMO_ACCOUNTS } from '../contexts/AuthContext.jsx'
+import { ROLES, isSocioPatrimonial } from '../lib/permissions.js'
 import Logo from '../components/Logo.jsx'
 import { Card } from '../components/ui/index.jsx'
+
+// Resumo do que cada perfil enxerga, para orientar a conta de demonstração.
+function accountHint(account) {
+  if (isSocioPatrimonial(account)) return 'Sócio patrimonial · acesso total, inclusive dados sensíveis'
+  switch (account.role) {
+    case ROLES.SOCIO:
+      return 'Sócio · consulta e edição de clientes'
+    case ROLES.ADVOGADO:
+      return 'Advogado associado · consulta e edição de clientes'
+    case ROLES.ESTAGIARIO:
+      return 'Estagiário · consulta os cadastros, sem editar'
+    default:
+      return 'Cliente · acesso ao próprio cadastro'
+  }
+}
 
 export default function Login() {
   const { login } = useAuth()
@@ -31,9 +47,7 @@ export default function Login() {
               >
                 <span>
                   <span className="block text-sm font-semibold text-white">{acc.name}</span>
-                  <span className="block text-xs capitalize text-muted">
-                    {acc.role === 'advogado' ? 'Advogado BRD · acesso total' : 'Cliente · acesso ao próprio cadastro'}
-                  </span>
+                  <span className="block text-xs text-muted">{accountHint(acc)}</span>
                 </span>
                 <span className="text-brd">→</span>
               </button>

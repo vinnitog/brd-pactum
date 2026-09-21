@@ -1,6 +1,6 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext.jsx'
-import { isAdvogado } from '../lib/permissions.js'
+import { isEquipeBRD, roleLabel } from '../lib/permissions.js'
 import Logo from './Logo.jsx'
 
 function NavItem({ to, children, end }) {
@@ -46,12 +46,12 @@ export default function AppShell({ children }) {
             <NavItem to="/clientes">Clientes</NavItem>
             <NavItem to="/fornecedores">Fornecedores</NavItem>
             <NavItem to="/agenda">Agenda</NavItem>
-            {isAdvogado(user) && <NavItem to="/dashboard">Dashboard</NavItem>}
+            {isEquipeBRD(user) && <NavItem to="/dashboard">Dashboard</NavItem>}
           </nav>
           <div className="ml-auto flex items-center gap-3">
             <div className="hidden text-right sm:block">
               <p className="text-sm font-medium leading-tight text-white">{user?.name}</p>
-              <p className="text-xs capitalize leading-tight text-muted">{user?.role}</p>
+              <p className="text-xs leading-tight text-muted">{roleLabel(user)}</p>
             </div>
             <div className="grid h-9 w-9 place-items-center rounded-full bg-brd/20 text-sm font-bold text-brd-200">
               {initials}
@@ -75,7 +75,7 @@ export default function AppShell({ children }) {
           <NavItem to="/clientes">Clientes</NavItem>
           <NavItem to="/fornecedores">Fornecedores</NavItem>
           <NavItem to="/agenda">Agenda</NavItem>
-          {isAdvogado(user) && <NavItem to="/dashboard">Dashboard</NavItem>}
+          {isEquipeBRD(user) && <NavItem to="/dashboard">Dashboard</NavItem>}
         </nav>
       </header>
       <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-6xl scroll-mt-40 px-4 py-8 sm:py-10">{children}</main>

@@ -34,26 +34,35 @@ export function getUpcomingEvents(events, { today, partyIds, limit = 4 } = {}) {
     .slice(0, limit)
 }
 
-export function getDeadlineBuckets(events, today) {
-  const buckets = { semana: 0, mes: 0, semestre: 0, ano: 0 }
-  if (!isValidLocalISO(today)) return buckets
+// Faixas de prazo fixas a partir da data de referência (hoje), conforme decisão
+// dos sócios: dia (vence hoje), semana civil, mês civil e próximos 6 meses.
+// "Fixo" = janelas de calendário (fim da semana/mês), não janelas deslizantes.
+// Contratos já vencidos ou com vencimento além de 6 meses ficam fora das faixas.
+// As faixas são mutuamente exclusivas: o primeiro limite atingido define a faixa.
+export function deadlineBucket(dateISO, today) {
+  if (!isValidLocalISO(today) || !isValidLocalISO(dateISO) || dateISO < today) return null
 
   const reference = toLocalDate(today)
   const weekEnd = new Date(reference)
   weekEnd.setDate(reference.getDate() + ((7 - reference.getDay()) % 7))
   const monthEnd = new Date(reference.getFullYear(), reference.getMonth() + 1, 0)
   const sixMonthsEnd = new Date(reference.getFullYear(), reference.getMonth() + 7, 0)
-  const weekEndISO = toLocalISO(weekEnd)
-  const monthEndISO = toLocalISO(monthEnd)
-  const sixMonthsEndISO = toLocalISO(sixMonthsEnd)
 
-  for (const event of events) {
-    if (event.type !== 'vencimento' || event.done || !isValidLocalISO(event.date) || event.date < today) continue
-    if (event.date <= weekEndISO) buckets.semana++
-    else if (event.date <= monthEndISO) buckets.mes++
-    else if (event.date <= sixMonthsEndISO) buckets.semestre++
-    else buckets.ano++
+  if (dateISO === today) return 'dia'
+  if (dateISO <= toLocalISO(weekEnd)) return 'semana'
+  if (dateISO <= toLocalISO(monthEnd)) return 'mes'
+  if (dateISO <= toLocalISO(sixMonthsEnd)) return 'semestre'
+  return null
+}
+
+// Conta os contratos em cada faixa de prazo pela data de vencimento. O prazo é
+// medido a partir da assinatura (decisão dos sócios); como o contrato guarda a
+// data de vencimento explícita, ela é o marco usado aqui.
+export function getContractDeadlineBuckets(contracts, today) {
+  const buckets = { dia: 0, semana: 0, mes: 0, semestre: 0 }
+  for (const contract of contracts) {
+    const bucket = deadlineBucket(contract.vencimento, today)
+    if (bucket) buckets[bucket]++
   }
-
   return buckets
 }

@@ -1,14 +1,26 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { visibleParties, canManage, canSeeParty, isAdvogado } from '../src/lib/permissions.js'
+import {
+  visibleParties,
+  canManage,
+  canSeeParty,
+  canSeeSensitive,
+  isAdvogado,
+  isEquipeBRD,
+  isSocioPatrimonial,
+  roleLabel
+} from '../src/lib/permissions.js'
 import { buildReminder } from '../src/lib/reminderTemplate.js'
 import { CONTRACT_GROUPS, findTipo, getContractValuesByType } from '../src/lib/contractTypes.js'
 import { parseCurrencyBR, maskCNPJ } from '../src/lib/format.js'
-import { getDeadlineBuckets, getUpcomingEvents, isValidLocalISO } from '../src/lib/deadlines.js'
+import { deadlineBucket, getContractDeadlineBuckets, getUpcomingEvents, isValidLocalISO } from '../src/lib/deadlines.js'
 import { REVIEW_FIELDS, isReviewFieldEditable, reviewFieldsFor } from '../src/lib/contractReview.js'
 
 const advogado = { id: 'a', role: 'advogado' }
 const cliente = { id: 'c', role: 'cliente', partyId: 'p1' }
+const estagiario = { id: 'e', role: 'estagiario' }
+const socio = { id: 's', role: 'socio' }
+const socioPatrimonial = { id: 'sp', role: 'socio', patrimonial: true }
 const parties = [
   { id: 'p1', kind: 'cliente', name: 'Cliente 1' },
   { id: 'p2', kind: 'cliente', name: 'Cliente 2' }
@@ -27,6 +39,44 @@ test('permissões de gestão e acesso por cadastro', () => {
   assert.ok(!canManage(cliente))
   assert.ok(canSeeParty(cliente, parties[0]))
   assert.ok(!canSeeParty(cliente, parties[1]))
+})
+
+test('estagiário consulta todos os cadastros mas não gerencia', () => {
+  assert.ok(isEquipeBRD(estagiario))
+  assert.equal(visibleParties(estagiario, parties).length, 2)
+  assert.ok(canSeeParty(estagiario, parties[1]))
+  assert.ok(!canManage(estagiario))
+})
+
+test('sócio vê todos os cadastros e gerencia', () => {
+  assert.ok(isEquipeBRD(socio))
+  assert.equal(visibleParties(socio, parties).length, 2)
+  assert.ok(canManage(socio))
+})
+
+test('só o sócio patrimonial alcança os dados sensíveis', () => {
+  assert.ok(canSeeSensitive(socioPatrimonial))
+  assert.ok(isSocioPatrimonial(socioPatrimonial))
+  for (const user of [socio, advogado, estagiario, cliente, null]) {
+    assert.ok(!canSeeSensitive(user))
+  }
+})
+
+test('equipe interna do BRD abrange estagiário, advogado e sócio', () => {
+  for (const user of [estagiario, advogado, socio, socioPatrimonial]) {
+    assert.ok(isEquipeBRD(user))
+  }
+  for (const user of [cliente, null, undefined, {}]) {
+    assert.ok(!isEquipeBRD(user))
+  }
+})
+
+test('roleLabel traz rótulos amigáveis por perfil', () => {
+  assert.equal(roleLabel(cliente), 'Cliente')
+  assert.equal(roleLabel(estagiario), 'Estagiário')
+  assert.equal(roleLabel(advogado), 'Advogado associado')
+  assert.equal(roleLabel(socio), 'Sócio')
+  assert.equal(roleLabel(socioPatrimonial), 'Sócio patrimonial')
 })
 
 test('lembrete usa o modelo do escritório e cita o cliente/contrato', () => {
@@ -73,105 +123,73 @@ test('próximos vencimentos considera hoje/futuro e ordena antes de limitar', ()
   assert.deepEqual(result.map((event) => event.id), ['today', 'next'])
 })
 
-test('prazos usam semana e mês civis sem contar vencidos ou datas inválidas', () => {
-  const events = [
-    { type: 'vencimento', date: '2026-08-28', done: false },
-    { type: 'vencimento', date: '2026-08-30', done: false },
-    { type: 'vencimento', date: '2026-08-31', done: false },
-    { type: 'vencimento', date: '2026-09-01', done: false },
-    { type: 'vencimento', date: '2027-02-28', done: false },
-    { type: 'vencimento', date: '2027-03-01', done: false },
-    { type: 'vencimento', date: '2026-08-27', done: false },
-    { type: 'vencimento', date: '2026-08-29', done: true },
-    { type: 'outro', date: '2026-08-29', done: false },
-    { type: 'vencimento', date: '2026-02-30', done: false }
-  ]
-
-  assert.deepEqual(getDeadlineBuckets(events, '2026-08-28'), {
-    semana: 2,
-    mes: 1,
-    semestre: 2,
-    ano: 1
-  })
+test('faixa de prazo classifica hoje, semana e mês civis, ignorando vencidos e inválidos', () => {
+  // Faixas fixas a partir da data de referência (decisão dos sócios):
+  // dia (hoje), semana civil, mês civil, próximos 6 meses.
+  assert.equal(deadlineBucket('2026-08-28', '2026-08-28'), 'dia') // vence hoje
+  assert.equal(deadlineBucket('2026-08-30', '2026-08-28'), 'semana') // domingo da semana civil
+  assert.equal(deadlineBucket('2026-08-31', '2026-08-28'), 'mes') // após a semana, dentro do mês
+  assert.equal(deadlineBucket('2026-09-01', '2026-08-28'), 'semestre') // dentro de 6 meses
+  assert.equal(deadlineBucket('2027-02-28', '2026-08-28'), 'semestre') // último dia da janela de 6 meses
+  assert.equal(deadlineBucket('2027-03-01', '2026-08-28'), null) // além de 6 meses → fora das faixas
+  assert.equal(deadlineBucket('2026-08-27', '2026-08-28'), null) // já vencido
+  assert.equal(deadlineBucket('2026-02-30', '2026-08-28'), null) // data inválida
 })
 
-test('semana civil atravessa mês de segunda a domingo', () => {
-  const events = [
-    { type: 'vencimento', date: '2026-08-30', done: false },
-    { type: 'vencimento', date: '2026-08-31', done: false },
-    { type: 'vencimento', date: '2026-09-06', done: false },
-    { type: 'vencimento', date: '2026-09-07', done: false }
-  ]
-
-  assert.deepEqual(getDeadlineBuckets(events, '2026-08-31'), {
-    semana: 2,
-    mes: 0,
-    semestre: 1,
-    ano: 0
-  })
+test('semana civil da faixa de prazo vai de segunda a domingo', () => {
+  // Referência 2026-08-31 é segunda; a semana civil termina em 2026-09-06 (domingo).
+  assert.equal(deadlineBucket('2026-08-30', '2026-08-31'), null) // domingo anterior (vencido)
+  assert.equal(deadlineBucket('2026-08-31', '2026-08-31'), 'dia')
+  assert.equal(deadlineBucket('2026-09-06', '2026-08-31'), 'semana') // domingo da mesma semana
+  // Segunda seguinte: já passou o fim do mês (ago) e da semana → cai em 6 meses.
+  assert.equal(deadlineBucket('2026-09-07', '2026-08-31'), 'semestre')
 })
 
-test('semana civil atravessa a virada do ano sem incluir a segunda seguinte', () => {
-  const events = [
-    { type: 'vencimento', date: '2026-12-28', done: false },
-    { type: 'vencimento', date: '2027-01-03', done: false },
-    { type: 'vencimento', date: '2027-01-04', done: false }
-  ]
-
-  assert.deepEqual(getDeadlineBuckets(events, '2026-12-28'), {
-    semana: 2,
-    mes: 0,
-    semestre: 1,
-    ano: 0
-  })
+test('semana civil da faixa atravessa a virada do ano sem incluir a segunda seguinte', () => {
+  assert.equal(deadlineBucket('2026-12-28', '2026-12-28'), 'dia')
+  assert.equal(deadlineBucket('2027-01-03', '2026-12-28'), 'semana') // domingo da mesma semana
+  assert.equal(deadlineBucket('2027-01-04', '2026-12-28'), 'semestre') // segunda seguinte, mês/ano diferente
 })
 
 test('fim do mês separa o dia atual do primeiro dia do mês seguinte', () => {
-  const events = [
-    { type: 'vencimento', date: '2027-01-31', done: false },
-    { type: 'vencimento', date: '2027-02-01', done: false }
-  ]
-
-  assert.deepEqual(getDeadlineBuckets(events, '2027-01-31'), {
-    semana: 1,
-    mes: 0,
-    semestre: 1,
-    ano: 0
-  })
+  // Referência 2027-01-31 é domingo: fim de semana e fim de mês coincidem.
+  assert.equal(deadlineBucket('2027-01-31', '2027-01-31'), 'dia')
+  // Dia seguinte já ultrapassa semana e mês correntes → cai em 6 meses.
+  assert.equal(deadlineBucket('2027-02-01', '2027-01-31'), 'semestre')
 })
 
-test('limite de seis meses inclui o último dia e exclui o seguinte', () => {
-  const events = [
-    { type: 'vencimento', date: '2027-02-28', done: false },
-    { type: 'vencimento', date: '2027-03-01', done: false }
-  ]
-
-  assert.deepEqual(getDeadlineBuckets(events, '2026-08-28'), {
-    semana: 0,
-    mes: 0,
-    semestre: 1,
-    ano: 1
-  })
-})
-
-test('datas ISO reconhecem 29 de fevereiro somente em ano bissexto', () => {
+test('faixa de prazo reconhece 29 de fevereiro somente em ano bissexto', () => {
   assert.equal(isValidLocalISO('2028-02-29'), true)
   assert.equal(isValidLocalISO('2027-02-29'), false)
-
-  assert.deepEqual(
-    getDeadlineBuckets([{ type: 'vencimento', date: '2028-02-29', done: false }], '2028-02-28'),
-    { semana: 1, mes: 0, semestre: 0, ano: 0 }
-  )
+  assert.equal(deadlineBucket('2028-02-29', '2028-02-28'), 'semana')
+  assert.equal(deadlineBucket('2027-02-29', '2027-02-27'), null) // data inexistente
 })
 
-test('today inválido produz resultados vazios e não classifica prazos', () => {
-  const events = [{ type: 'vencimento', date: '2028-02-29', done: false }]
-  const emptyBuckets = { semana: 0, mes: 0, semestre: 0, ano: 0 }
-
+test('today inválido não classifica nenhuma faixa de prazo', () => {
   for (const today of ['', '2027-02-29', '28/02/2028']) {
-    assert.deepEqual(getDeadlineBuckets(events, today), emptyBuckets)
-    assert.deepEqual(getUpcomingEvents(events, { today }), [])
+    assert.equal(deadlineBucket('2028-02-29', today), null)
+    assert.deepEqual(getUpcomingEvents([{ type: 'vencimento', date: '2028-02-29', done: false }], { today }), [])
   }
+})
+
+test('getContractDeadlineBuckets conta contratos por faixa e ignora sem vencimento ou vencidos', () => {
+  const contracts = [
+    { vencimento: '2026-08-28' }, // dia
+    { vencimento: '2026-08-30' }, // semana
+    { vencimento: '2026-08-31' }, // mes
+    { vencimento: '2026-09-01' }, // semestre
+    { vencimento: '2027-03-01' }, // além de 6 meses → ignorado
+    { vencimento: '2026-08-01' }, // vencido → ignorado
+    { vencimento: '' }, // sem vencimento → ignorado
+    {} // sem campo → ignorado
+  ]
+
+  assert.deepEqual(getContractDeadlineBuckets(contracts, '2026-08-28'), {
+    dia: 1,
+    semana: 1,
+    mes: 1,
+    semestre: 1
+  })
 })
 
 test('dashboard agrega valores pelo tipo específico do contrato', () => {
