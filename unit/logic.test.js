@@ -11,6 +11,8 @@ import {
   roleLabel
 } from '../src/lib/permissions.js'
 import { buildReminder } from '../src/lib/reminderTemplate.js'
+import { whatsappLink } from '../src/lib/whatsapp.js'
+import { addReminder, listReminders, resetStore } from '../src/lib/store.js'
 import { CONTRACT_GROUPS, findTipo, getContractValuesByType } from '../src/lib/contractTypes.js'
 import { parseCurrencyBR, maskCNPJ } from '../src/lib/format.js'
 import { deadlineBucket, getContractDeadlineBuckets, getUpcomingEvents, isValidLocalISO } from '../src/lib/deadlines.js'
@@ -90,6 +92,34 @@ test('lembrete usa o modelo do escritório e cita o cliente/contrato', () => {
   assert.match(text, /Carmello 350/)
   assert.match(text, /Contrato Gold/)
   assert.match(text, /BRD pactum\.$/)
+})
+
+// Lembretes ao cliente (Issue #12): canal WhatsApp decidido pelos sócios.
+test('whatsappLink adiciona o código do Brasil a número local e codifica o texto', () => {
+  assert.equal(
+    whatsappLink('(11) 99999-0001', 'Olá, tudo bem?'),
+    'https://wa.me/5511999990001?text=Ol%C3%A1%2C%20tudo%20bem%3F'
+  )
+})
+
+test('whatsappLink preserva número que já traz o código do país e trata telefone vazio', () => {
+  assert.equal(whatsappLink('5511999990001', 'oi'), 'https://wa.me/5511999990001?text=oi')
+  assert.equal(whatsappLink('', 'oi'), '')
+  assert.equal(whatsappLink(null, 'oi'), '')
+})
+
+test('histórico de lembretes registra o envio e filtra por evento e por parte', () => {
+  resetStore()
+  addReminder({ eventId: 'ev1', contractId: 'c1', partyId: 'p1', channel: 'whatsapp', text: 'primeiro' })
+  addReminder({ eventId: 'ev1', contractId: 'c1', partyId: 'p1', channel: 'sistema', text: 'segundo' })
+  addReminder({ eventId: 'ev2', contractId: 'c2', partyId: 'p2', channel: 'whatsapp', text: 'outro' })
+
+  const doEvento = listReminders({ eventId: 'ev1' })
+  assert.equal(doEvento.length, 2)
+  assert.ok(doEvento.every((r) => r.eventId === 'ev1' && r.id && r.sentAt))
+  assert.deepEqual(new Set(doEvento.map((r) => r.text)), new Set(['primeiro', 'segundo']))
+  assert.equal(listReminders({ partyId: 'p2' }).length, 1)
+  resetStore()
 })
 
 test('taxonomia de contratos carrega grupos e subtipos', () => {
