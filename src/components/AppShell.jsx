@@ -43,8 +43,7 @@ export default function AppShell({ children }) {
             <NavItem to="/" end>
               Início
             </NavItem>
-            <NavItem to="/clientes">Clientes</NavItem>
-            <NavItem to="/fornecedores">Fornecedores</NavItem>
+            <NavItem to="/cadastros">Cadastros</NavItem>
             <NavItem to="/agenda">Agenda</NavItem>
             {isEquipeBRD(user) && <NavItem to="/dashboard">Dashboard</NavItem>}
           </nav>
@@ -72,8 +71,7 @@ export default function AppShell({ children }) {
           <NavItem to="/" end>
             Início
           </NavItem>
-          <NavItem to="/clientes">Clientes</NavItem>
-          <NavItem to="/fornecedores">Fornecedores</NavItem>
+          <NavItem to="/cadastros">Cadastros</NavItem>
           <NavItem to="/agenda">Agenda</NavItem>
           {isEquipeBRD(user) && <NavItem to="/dashboard">Dashboard</NavItem>}
         </nav>

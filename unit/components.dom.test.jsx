@@ -89,6 +89,7 @@ beforeEach(() => {
   storeMocks.getParty.mockImplementation((id) => state.parties.find((party) => party.id === id) || null)
   storeMocks.getContract.mockImplementation((id) => state.contracts.find((contract) => contract.id === id) || null)
   storeMocks.saveContract.mockImplementation((contract) => ({ ...contract, id: 'saved-contract' }))
+  storeMocks.saveParty.mockImplementation((party) => ({ ...party, id: 'saved-party' }))
   authMocks.useAuth.mockReturnValue({ user: lawyer })
   vi.useFakeTimers({ toFake: ['Date'] })
   vi.setSystemTime(new Date(2028, 1, 15, 12))
@@ -380,6 +381,26 @@ describe('início e cadastros', () => {
     fireEvent.change(search, { target: { value: '555.666' } })
     expect(screen.getByRole('link', { name: /Bruno Cliente/ }).getAttribute('href')).toBe('/parte/party-2')
     expect(screen.queryByRole('link', { name: /Ana Cliente/ })).toBeNull()
+  })
+
+  it('centraliza a busca aberta entre clientes e fornecedores e permite escolher o tipo no novo cadastro', () => {
+    state.parties[2].email = 'contato@fornecedor.com'
+    renderPage(<PartyList />)
+    const search = screen.getByRole('searchbox', { name: 'Pesquisar cadastros' })
+
+    fireEvent.change(search, { target: { value: 'contato@fornecedor.com' } })
+    expect(screen.getByRole('link', { name: /Fornecedor Externo/ })).toBeTruthy()
+    expect(screen.queryByRole('link', { name: /Ana Cliente/ })).toBeNull()
+
+    fireEvent.change(search, { target: { value: '' } })
+    fireEvent.click(screen.getByRole('button', { name: /Novo cadastro/ }))
+    const dialog = screen.getByRole('dialog', { name: 'Novo cadastro' })
+    expect(within(dialog).getByRole('combobox', { name: 'Tipo de cadastro' }).value).toBe('cliente')
+    fireEvent.change(within(dialog).getByRole('combobox', { name: 'Tipo de cadastro' }), { target: { value: 'fornecedor' } })
+    fireEvent.change(within(dialog).getByRole('textbox', { name: 'Nome completo' }), { target: { value: 'Novo fornecedor' } })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Salvar' }))
+
+    expect(storeMocks.saveParty).toHaveBeenCalledWith(expect.objectContaining({ kind: 'fornecedor', name: 'Novo fornecedor' }))
   })
 
   it('distingue busca vazia e restaura apenas cadastros autorizados ao limpar', () => {
