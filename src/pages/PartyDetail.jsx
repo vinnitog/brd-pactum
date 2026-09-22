@@ -50,7 +50,7 @@ export default function PartyDetail() {
       <div className="mt-3 mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-bold">{party.name}</h1>
+            <h1 className="text-2xl font-bold">{party.name || 'Cadastro sem identificação'}</h1>
             <Badge tone="gray">{party.personType}</Badge>
             <Badge tone={party.kind === 'cliente' ? 'brd' : 'yellow'}>
               {party.kind === 'cliente' ? 'Cliente' : 'Fornecedor'}

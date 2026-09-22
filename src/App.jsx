@@ -30,6 +30,14 @@ export default function App() {
         }
       />
       <Route
+        path="/cadastros"
+        element={
+          <ProtectedRoute>
+            <PartyList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/fornecedores"
         element={
           <ProtectedRoute>

@@ -57,11 +57,11 @@ export default function AgendaList({ events, showParty = true, canManage = false
                 {e.done && <Badge tone="gray">Concluído</Badge>}
               </div>
               <div className="flex flex-wrap items-center gap-1">
-                <Button variant="subtle" onClick={() => setReminder(e)}>
-                  Gerar lembrete
-                </Button>
                 {canManage && (
                   <>
+                    <Button variant="subtle" onClick={() => setReminder(e)}>
+                      Gerar lembrete
+                    </Button>
                     {onEdit && (
                       <button
                         onClick={() => onEdit(e)}

@@ -11,7 +11,7 @@ export default function PartyFormModal({ kind, party = null, onClose }) {
   const navigate = useNavigate()
   const [form, setForm] = useState(() => ({
     id: party?.id,
-    kind,
+    kind: party?.kind || kind || 'cliente',
     personType: party?.personType || 'PF',
     name: party?.name || '',
     doc: party?.doc || '',
@@ -30,7 +30,6 @@ export default function PartyFormModal({ kind, party = null, onClose }) {
 
   function submit(e) {
     e.preventDefault()
-    if (!form.name.trim()) return setError('Informe o nome / razão social.')
     const saved = saveParty({
       id: form.id,
       kind: form.kind,
@@ -47,11 +46,19 @@ export default function PartyFormModal({ kind, party = null, onClose }) {
     if (!party) navigate(`/parte/${saved.id}`)
   }
 
-  const label = kind === 'cliente' ? 'cliente' : 'fornecedor'
+  const label = form.kind === 'cliente' ? 'cliente' : 'fornecedor'
 
   return (
-    <Modal title={party ? `Editar ${label}` : `Novo ${label}`} onClose={onClose}>
+    <Modal title={party ? `Editar ${label}` : kind ? `Novo ${label}` : 'Novo cadastro'} onClose={onClose}>
       <form onSubmit={submit} className="space-y-4">
+        {!party && !kind && (
+          <Field label="Tipo de cadastro">
+            <Select value={form.kind} onChange={(e) => set('kind', e.target.value)}>
+              <option value="cliente">Cliente</option>
+              <option value="fornecedor">Fornecedor</option>
+            </Select>
+          </Field>
+        )}
         <Field label="Tipo de pessoa">
           <Select value={form.personType} onChange={(e) => set('personType', e.target.value)}>
             <option value="PF">Pessoa Física</option>
