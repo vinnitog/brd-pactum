@@ -113,7 +113,8 @@ function seed() {
   return {
     parties: [carmello, cliente2, fornecedor],
     contracts: [contratoCarmello],
-    events
+    events,
+    reminders: []
   }
 }
 
@@ -124,7 +125,9 @@ const listeners = new Set()
 function load() {
   try {
     const raw = localStorage.getItem(KEY)
-    if (raw) return JSON.parse(raw)
+    // Normaliza estados antigos sem `reminders` (Issue #12): a referência precisa
+    // ser estável para o useSyncExternalStore não recriar o snapshot a cada render.
+    if (raw) return { reminders: [], ...JSON.parse(raw) }
   } catch {
     /* ignora storage corrompido */
   }
@@ -253,4 +256,27 @@ export function toggleEventDone(id) {
 
 export function deleteEvent(id) {
   commit({ ...state, events: state.events.filter((e) => e.id !== id) })
+}
+
+// ---- Histórico de lembretes ao cliente (Issue #12) -------------------------
+// Cada registro guarda o texto disparado, o canal e o momento do envio. O
+// disparo é manual (decisão dos sócios): registrar aqui documenta o envio.
+export function listReminders(filter = {}) {
+  let rs = state.reminders || []
+  if (filter.eventId) rs = rs.filter((r) => r.eventId === filter.eventId)
+  if (filter.contractId) rs = rs.filter((r) => r.contractId === filter.contractId)
+  if (filter.partyId) rs = rs.filter((r) => r.partyId === filter.partyId)
+  return [...rs].sort((a, b) => b.sentAt.localeCompare(a.sentAt))
+}
+
+export function addReminder(data) {
+  const reminders = state.reminders ? [...state.reminders] : []
+  const created = {
+    channel: 'whatsapp',
+    ...data,
+    id: uid('rem'),
+    sentAt: new Date().toISOString()
+  }
+  commit({ ...state, reminders: [...reminders, created] })
+  return created
 }

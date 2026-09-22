@@ -6,14 +6,16 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 
 const storeMocks = vi.hoisted(() => ({
+  addReminder: vi.fn(),
   deleteEvent: vi.fn(),
   getContract: vi.fn(() => null),
   getParty: vi.fn(() => null),
+  listReminders: vi.fn(() => []),
   saveContract: vi.fn(),
   saveEvent: vi.fn(),
   saveParty: vi.fn(),
   toggleEventDone: vi.fn(),
-  useStore: vi.fn((selector) => selector({ events: [] }))
+  useStore: vi.fn((selector) => selector({ events: [], reminders: [] }))
 }))
 
 vi.mock('../src/lib/store.js', () => storeMocks)
@@ -22,6 +24,8 @@ vi.mock('../src/contexts/AuthContext.jsx', () => authMocks)
 
 import AgendaList from '../src/components/AgendaList.jsx'
 import EventFormModal from '../src/components/EventFormModal.jsx'
+import ReminderComposer from '../src/components/ReminderComposer.jsx'
+import BatchReminderModal from '../src/components/BatchReminderModal.jsx'
 import Modal from '../src/components/Modal.jsx'
 import Donut from '../src/components/Donut.jsx'
 import Home from '../src/pages/Home.jsx'
@@ -78,7 +82,8 @@ beforeEach(() => {
       { id: 'party-3', name: 'Fornecedor Externo', kind: 'fornecedor', personType: 'PJ', doc: '12.345.678/0001-90' }
     ],
     contracts: [],
-    events: []
+    events: [],
+    reminders: []
   }
   storeMocks.useStore.mockImplementation((selector) => selector(state))
   storeMocks.getParty.mockImplementation((id) => state.parties.find((party) => party.id === id) || null)
@@ -236,7 +241,7 @@ describe('proteções da agenda', () => {
   })
 
   it('gera o lembrete do segundo evento com seus próprios dados e devolve foco ao fechar', async () => {
-    state.parties[1].email = 'bruno@example.test'
+    state.parties[1].phone = '(11) 98888-2222'
     state.contracts = [
       { id: 'contract-1', partyId: 'party-1', titulo: 'Contrato de Ana' },
       { id: 'contract-2', partyId: 'party-2', titulo: 'Contrato de Bruno' }
@@ -252,14 +257,14 @@ describe('proteções da agenda', () => {
 
     const dialog = screen.getByRole('dialog', { name: 'Lembrete ao cliente' })
     await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true))
-    const reminder = within(dialog).getByRole('textbox').value
+    const reminder = within(dialog).getByRole('textbox', { name: 'Texto do lembrete' }).value
     expect(reminder).toContain('Contrato de Bruno')
     expect(reminder).toContain('Bruno Cliente')
     expect(reminder).toContain('com atualização monetária prevista')
     expect(reminder).toContain('20/03/2028')
     expect(reminder).not.toContain('Contrato de Ana')
     expect(reminder).not.toContain('15/02/2028')
-    expect(within(dialog).getByRole('link', { name: /Enviar por e-mail/ }).getAttribute('href')).toContain('mailto:bruno@example.test?')
+    expect(within(dialog).getByRole('link', { name: /Enviar por WhatsApp/ }).getAttribute('href')).toContain('https://wa.me/5511988882222?')
 
     fireEvent.click(within(dialog).getByRole('button', { name: 'Fechar' }))
     expect(screen.queryByRole('dialog')).toBeNull()
@@ -562,6 +567,76 @@ describe('agenda: filtros e criação/edição (Issue #10)', () => {
     render(<EventFormModal partyId="party-1" contracts={[]} onClose={vi.fn()} />)
     expect(screen.queryByRole('combobox', { name: 'Cliente / fornecedor' })).toBeNull()
     expect(screen.getByRole('button', { name: 'Adicionar' })).toBeTruthy()
+  })
+})
+
+describe('lembretes ao cliente (Issue #12)', () => {
+  const party = { id: 'party-1', name: 'Ana Cliente', phone: '(11) 90000-0000' }
+  const contract = { id: 'contract-1', partyId: 'party-1', titulo: 'Contrato de Ana' }
+
+  it('permite editar o texto e envia por WhatsApp com o texto ajustado, registrando o histórico', () => {
+    const ev = event({ contractId: 'contract-1' })
+    render(<ReminderComposer event={ev} party={party} contract={contract} />)
+
+    const textarea = screen.getByRole('textbox', { name: 'Texto do lembrete' })
+    fireEvent.change(textarea, { target: { value: 'Mensagem revisada pelo sócio' } })
+
+    const link = screen.getByRole('link', { name: /Enviar por WhatsApp/ })
+    expect(link.getAttribute('href')).toBe(`https://wa.me/5511900000000?text=${encodeURIComponent('Mensagem revisada pelo sócio')}`)
+
+    fireEvent.click(link)
+    expect(storeMocks.addReminder).toHaveBeenCalledWith(
+      expect.objectContaining({ eventId: ev.id, contractId: 'contract-1', partyId: 'party-1', channel: 'whatsapp', text: 'Mensagem revisada pelo sócio' })
+    )
+  })
+
+  it('registra envio manual pelo sistema quando não há disparo por WhatsApp', () => {
+    const ev = event({ contractId: 'contract-1' })
+    render(<ReminderComposer event={ev} party={party} contract={contract} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Registrar envio' }))
+    expect(storeMocks.addReminder).toHaveBeenCalledWith(expect.objectContaining({ channel: 'sistema', eventId: ev.id }))
+  })
+
+  it('desabilita o WhatsApp quando o cliente não tem telefone cadastrado', () => {
+    render(<ReminderComposer event={event()} party={{ id: 'party-1', name: 'Sem Telefone' }} contract={contract} />)
+    expect(screen.queryByRole('link', { name: /Enviar por WhatsApp/ })).toBeNull()
+    expect(screen.getByRole('button', { name: /Enviar por WhatsApp/ }).disabled).toBe(true)
+    expect(screen.getByText(/Cadastre um telefone/)).toBeTruthy()
+  })
+
+  it('lista o histórico de envios já registrados para o vencimento', () => {
+    state.reminders = [
+      { id: 'rem-1', eventId: 'event-1', channel: 'whatsapp', text: 'x', sentAt: '2028-02-15T10:00:00.000Z' }
+    ]
+    render(<ReminderComposer event={event()} party={party} contract={contract} />)
+    expect(screen.getByRole('heading', { name: 'Histórico de envios' })).toBeTruthy()
+    expect(screen.getByRole('listitem').textContent).toMatch(/WhatsApp ·/)
+  })
+
+  it('não oferece geração de lembrete para o cliente (envio é do sócio do BRD)', () => {
+    render(<AgendaList events={[event({ contractId: 'contract-1' })]} />)
+    expect(screen.queryByRole('button', { name: 'Gerar lembrete' })).toBeNull()
+  })
+
+  it('gera lembretes em lote pré-selecionando os vencimentos dentro de 2 dias', () => {
+    state.contracts = [contract]
+    state.events = [
+      event({ id: 'due', contractId: 'contract-1', date: '2028-02-16' }),
+      event({ id: 'far', contractId: 'contract-1', date: '2028-03-30' })
+    ]
+    renderPage(<Agenda />)
+    fireEvent.click(screen.getByRole('button', { name: 'Lembretes em lote' }))
+
+    const dialog = screen.getByRole('dialog', { name: 'Gerar lembretes em lote' })
+    const checks = within(dialog).getAllByRole('checkbox')
+    expect(checks).toHaveLength(2)
+    expect(checks[0].checked).toBe(true) // 16/02 → dentro da janela de 2 dias
+    expect(checks[1].checked).toBe(false) // 30/03 → fora da janela
+
+    fireEvent.click(within(dialog).getByRole('button', { name: /Gerar/ }))
+    const composers = within(dialog).getAllByRole('textbox', { name: 'Texto do lembrete' })
+    expect(composers).toHaveLength(1)
+    expect(composers[0].value).toContain('Contrato de Ana')
   })
 })
 

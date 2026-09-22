@@ -4,6 +4,7 @@ import { visibleParties, canManage } from '../lib/permissions.js'
 import { useStore } from '../lib/store.js'
 import AgendaList from '../components/AgendaList.jsx'
 import EventFormModal from '../components/EventFormModal.jsx'
+import BatchReminderModal from '../components/BatchReminderModal.jsx'
 import { Button, Field, Select } from '../components/ui/index.jsx'
 import { formatDateBR, todayLocalISO } from '../lib/format.js'
 import { isValidLocalISO } from '../lib/deadlines.js'
@@ -33,6 +34,8 @@ export default function Agenda() {
   // Estado do formulário de evento: null = fechado; { event: null } = novo;
   // { event } = edição de um evento existente.
   const [editor, setEditor] = useState(null)
+  // Geração de lembretes em lote (decisão dos sócios): true = modal aberto.
+  const [batch, setBatch] = useState(false)
 
   function changeMonth(offset) {
     setCursor(new Date(year, month + offset, 1))
@@ -109,7 +112,12 @@ export default function Agenda() {
         </div>
         <div className="flex flex-wrap items-center gap-3">
           {manage && (
-            <Button onClick={() => setEditor({ event: null })}>+ Novo evento</Button>
+            <>
+              <Button variant="ghost" onClick={() => setBatch(true)}>
+                Lembretes em lote
+              </Button>
+              <Button onClick={() => setEditor({ event: null })}>+ Novo evento</Button>
+            </>
           )}
           <div className="flex gap-1 rounded-xl border border-white/10 bg-black/30 p-1">
             {[
@@ -263,6 +271,8 @@ export default function Agenda() {
           onClose={() => setEditor(null)}
         />
       )}
+
+      {batch && <BatchReminderModal events={events} onClose={() => setBatch(false)} />}
     </div>
   )
 }
