@@ -15,6 +15,7 @@ import { CONTRACT_GROUPS, findTipo, getContractValuesByType } from '../src/lib/c
 import { parseCurrencyBR, maskCNPJ } from '../src/lib/format.js'
 import { deadlineBucket, getContractDeadlineBuckets, getUpcomingEvents, isValidLocalISO } from '../src/lib/deadlines.js'
 import { REVIEW_FIELDS, isReviewFieldEditable, reviewFieldsFor } from '../src/lib/contractReview.js'
+import { qualificacaoFromParty } from '../src/lib/party.js'
 
 const advogado = { id: 'a', role: 'advogado' }
 const cliente = { id: 'c', role: 'cliente', partyId: 'p1' }
@@ -251,4 +252,35 @@ test('dashboard não mistura tipos homônimos de grupos jurídicos diferentes', 
     ['Distribuição — Contratos Empresariais', 2000],
     ['Distribuição — Contratos Civis e Gerais', 1000]
   ])
+})
+
+// Reaproveitamento de dados (Issue #11): a qualificação é montada a partir do
+// cadastro, na ordem e com os campos definidos pelos sócios.
+test('qualificacaoFromParty reaproveita nome, CPF, RG, endereço, e-mail e telefone (PF)', () => {
+  const party = {
+    personType: 'PF',
+    name: 'Marina Alves',
+    doc: '987.654.321-00',
+    rg: '12.345.678-9',
+    address: 'Av. Paulista, 1000 - São Paulo/SP',
+    email: 'marina@email.com',
+    phone: '(11) 98888-2222'
+  }
+  assert.equal(
+    qualificacaoFromParty(party),
+    'Marina Alves, CPF 987.654.321-00, RG 12.345.678-9, Av. Paulista, 1000 - São Paulo/SP, marina@email.com, (11) 98888-2222'
+  )
+})
+
+test('qualificacaoFromParty usa rótulo CNPJ para pessoa jurídica', () => {
+  const party = { personType: 'PJ', name: 'Gráfica Bem Ltda', doc: '55.444.333/0001-22', email: 'contato@bem.com' }
+  assert.equal(qualificacaoFromParty(party), 'Gráfica Bem Ltda, CNPJ 55.444.333/0001-22, contato@bem.com')
+})
+
+test('qualificacaoFromParty ignora campos vazios sem deixar vírgulas soltas', () => {
+  assert.equal(qualificacaoFromParty({ personType: 'PF', name: 'Só Nome' }), 'Só Nome')
+})
+
+test('qualificacaoFromParty retorna string vazia quando não há parte', () => {
+  assert.equal(qualificacaoFromParty(null), '')
 })

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Modal from './Modal.jsx'
 import { Button, Field, Input, Select } from './ui/index.jsx'
 import { saveParty } from '../lib/store.js'
-import { maskCPF, maskCNPJ } from '../lib/format.js'
+import { maskCPF, maskCNPJ, maskRG } from '../lib/format.js'
 
 // Cadastro de cliente/fornecedor. Para PJ, abre a qualificação do representante
 // legal (conforme a especificação).
@@ -15,6 +15,7 @@ export default function PartyFormModal({ kind, party = null, onClose }) {
     personType: party?.personType || 'PF',
     name: party?.name || '',
     doc: party?.doc || '',
+    rg: party?.rg || '',
     email: party?.email || '',
     phone: party?.phone || '',
     address: party?.address || '',
@@ -36,6 +37,7 @@ export default function PartyFormModal({ kind, party = null, onClose }) {
       personType: form.personType,
       name: form.name.trim(),
       doc: form.doc.trim(),
+      rg: isPJ ? '' : form.rg.trim(),
       email: form.email.trim(),
       phone: form.phone.trim(),
       address: form.address.trim(),
@@ -73,6 +75,12 @@ export default function PartyFormModal({ kind, party = null, onClose }) {
             <Input value={form.phone} onChange={(e) => set('phone', e.target.value)} />
           </Field>
         </div>
+
+        {!isPJ && (
+          <Field label="RG">
+            <Input value={form.rg} onChange={(e) => set('rg', maskRG(e.target.value))} inputMode="text" />
+          </Field>
+        )}
 
         <Field label="E-mail">
           <Input type="email" value={form.email} onChange={(e) => set('email', e.target.value)} />

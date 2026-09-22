@@ -5,6 +5,7 @@ import { Badge, Button, Card, Field, Input, Textarea } from '../components/ui/in
 import { useStore, getParty, saveContract, saveEvent } from '../lib/store.js'
 import { generateContractText } from '../lib/contractGenerator.js'
 import { reviewFieldsFor } from '../lib/contractReview.js'
+import { qualificacaoFromParty } from '../lib/party.js'
 import { maskCurrency, parseCurrencyBR } from '../lib/format.js'
 
 export default function NewContract() {
@@ -35,11 +36,9 @@ export default function NewContract() {
   const isPJ = party?.personType === 'PJ'
 
   // Pré-preenche a qualificação a partir do cadastro do cliente (torna a
-  // elaboração automática, conforme observação da especificação).
-  const defaultQualificacao = useMemo(() => {
-    if (!party) return ''
-    return `${party.name}, ${isPJ ? 'CNPJ' : 'CPF'} ${party.doc || '—'}, ${party.address || ''}`.trim()
-  }, [party, isPJ])
+  // elaboração automática). Reaproveita os campos definidos pelos sócios:
+  // nome, CPF/CNPJ, RG, endereço, e-mail e telefone.
+  const defaultQualificacao = useMemo(() => qualificacaoFromParty(party), [party])
 
   const defaultRepresentante = useMemo(
     () => (party?.repLegal?.nome ? `${party.repLegal.nome}, ${party.repLegal.cargo}` : ''),

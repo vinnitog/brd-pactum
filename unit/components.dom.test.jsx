@@ -29,6 +29,8 @@ import PartyList from '../src/pages/PartyList.jsx'
 import Agenda from '../src/pages/Agenda.jsx'
 import NewContract from '../src/pages/NewContract.jsx'
 import Dashboard from '../src/pages/Dashboard.jsx'
+import ManageContractModal from '../src/components/ManageContractModal.jsx'
+import PartyFormModal from '../src/components/PartyFormModal.jsx'
 
 let state
 const lawyer = { name: 'Dra. Ana', role: 'advogado' }
@@ -687,5 +689,83 @@ describe('Dashboard com filtros', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Limpar filtros' }))
     expect(contador().textContent).toBe('3 de 3 contratos')
     expect(screen.queryByRole('button', { name: 'Limpar filtros' })).toBeNull()
+  })
+})
+
+describe('cadastro de gerenciamento (Issue #11)', () => {
+  beforeEach(() => {
+    Object.assign(state.parties[0], {
+      rg: '12.345.678-9',
+      email: 'ana@email.com',
+      phone: '(11) 90000-0000',
+      address: 'Rua A, 100 - São Paulo/SP'
+    })
+  })
+
+  it('pré-preenche a qualificação reaproveitando os dados do cadastro da parte', () => {
+    render(<MemoryRouter><ManageContractModal partyId="party-1" onClose={() => {}} /></MemoryRouter>)
+    const qualificacao = screen.getByLabelText('Qualificação das partes')
+    expect(qualificacao.value).toContain('Ana Cliente')
+    expect(qualificacao.value).toContain('CPF 111.222.333-44')
+    expect(qualificacao.value).toContain('RG 12.345.678-9')
+    expect(qualificacao.value).toContain('ana@email.com')
+    expect(qualificacao.value).toContain('(11) 90000-0000')
+  })
+
+  it('bloqueia o cadastro sem testemunha e exibe erro', () => {
+    render(<MemoryRouter><ManageContractModal partyId="party-1" onClose={() => {}} /></MemoryRouter>)
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar cadastro' }))
+    expect(screen.getByRole('alert').textContent).toMatch(/testemunha/i)
+    expect(storeMocks.saveContract).not.toHaveBeenCalled()
+  })
+
+  it('salva o cadastro e agenda o vencimento quando há testemunha', () => {
+    const onClose = vi.fn()
+    render(<MemoryRouter><ManageContractModal partyId="party-1" onClose={onClose} /></MemoryRouter>)
+    fireEvent.change(screen.getAllByPlaceholderText('Nome')[0], { target: { value: 'Testemunha Um' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar cadastro' }))
+
+    expect(storeMocks.saveContract).toHaveBeenCalledOnce()
+    expect(storeMocks.saveContract).toHaveBeenCalledWith(
+      expect.objectContaining({
+        partyId: 'party-1',
+        source: 'manual',
+        testemunhas: [expect.objectContaining({ nome: 'Testemunha Um' })]
+      })
+    )
+    expect(storeMocks.saveEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ contractId: 'saved-contract', partyId: 'party-1', type: 'vencimento' })
+    )
+    expect(onClose).toHaveBeenCalledOnce()
+  })
+})
+
+describe('RG no cadastro de parte (Issue #11)', () => {
+  it('exibe e salva o RG para pessoa física', () => {
+    render(
+      <MemoryRouter>
+        <PartyFormModal
+          kind="cliente"
+          party={{ id: 'party-1', kind: 'cliente', personType: 'PF', name: 'Ana Cliente', rg: '12.345.678-9' }}
+          onClose={() => {}}
+        />
+      </MemoryRouter>
+    )
+    expect(screen.getByLabelText('RG').value).toBe('12.345.678-9')
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar' }))
+    expect(storeMocks.saveParty).toHaveBeenCalledWith(expect.objectContaining({ rg: '12.345.678-9' }))
+  })
+
+  it('não exibe o campo RG para pessoa jurídica', () => {
+    render(
+      <MemoryRouter>
+        <PartyFormModal
+          kind="fornecedor"
+          party={{ id: 'p2', kind: 'fornecedor', personType: 'PJ', name: 'Gráfica Bem Ltda' }}
+          onClose={() => {}}
+        />
+      </MemoryRouter>
+    )
+    expect(screen.queryByLabelText('RG')).toBeNull()
   })
 })
