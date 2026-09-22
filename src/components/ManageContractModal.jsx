@@ -2,7 +2,8 @@ import { useState } from 'react'
 import Modal from './Modal.jsx'
 import { Button, Field, Input, Textarea } from './ui/index.jsx'
 import ClassificationPicker from './ClassificationPicker.jsx'
-import { saveContract, saveEvent } from '../lib/store.js'
+import { saveContract, saveEvent, getParty } from '../lib/store.js'
+import { qualificacaoFromParty } from '../lib/party.js'
 import { maskCurrency, parseCurrencyBR, todayLocalISO } from '../lib/format.js'
 
 // Sub-aba "Cadastro de gerenciamento": qualificação das partes, principais
@@ -18,12 +19,14 @@ const VENC_TIPOS = [
 export default function ManageContractModal({ partyId, onClose }) {
   const [titulo, setTitulo] = useState('')
   const [classe, setClasse] = useState({ groupId: '', tipo: '', subtipo: '' })
-  const [qualificacao, setQualificacao] = useState('')
+  // Reaproveita a qualificação do cadastro da parte (decisão dos sócios); segue editável.
+  const [qualificacao, setQualificacao] = useState(() => qualificacaoFromParty(getParty(partyId)))
   const [valor, setValor] = useState('')
   const [vencimentos, setVencimentos] = useState([
     { type: 'vencimento', date: todayLocalISO(), urgency: 'media', note: '' }
   ])
   const [testemunhas, setTestemunhas] = useState([{ nome: '', cpf: '' }])
+  const [error, setError] = useState('')
 
   const setVenc = (i, k, v) =>
     setVencimentos((list) => list.map((x, idx) => (idx === i ? { ...x, [k]: v } : x)))
@@ -32,6 +35,13 @@ export default function ManageContractModal({ partyId, onClose }) {
 
   function submit(e) {
     e.preventDefault()
+    // Testemunha é obrigatória (decisão dos sócios): exige ao menos uma com nome.
+    const testemunhasValidas = testemunhas.filter((t) => t.nome.trim())
+    if (testemunhasValidas.length === 0) {
+      setError('Informe ao menos uma testemunha (nome obrigatório).')
+      return
+    }
+    setError('')
     const contract = saveContract({
       partyId,
       source: 'manual',
@@ -42,7 +52,7 @@ export default function ManageContractModal({ partyId, onClose }) {
       titulo: titulo.trim() || classe.tipo || 'Contrato (gerenciamento)',
       valor: parseCurrencyBR(valor),
       parte: { qualificacao: qualificacao.trim() },
-      testemunhas: testemunhas.filter((t) => t.nome.trim())
+      testemunhas: testemunhasValidas
     })
     vencimentos
       .filter((v) => v.date)
@@ -85,6 +95,10 @@ export default function ManageContractModal({ partyId, onClose }) {
               + adicionar
             </button>
           </div>
+          {/* Urgência é classificação manual (decisão dos sócios); o guia abaixo é só orientação. */}
+          <p className="mb-2 text-xs text-muted">
+            Urgência definida manualmente. Guia: Alta = 10 dias ou menos · Média = 30 a 90 dias · Baixa = mais de 90 dias.
+          </p>
           <div className="space-y-2">
             {vencimentos.map((v, i) => (
               <div key={i} className="grid grid-cols-1 gap-2 rounded-xl border border-white/10 bg-black/20 p-3 sm:grid-cols-[1.4fr_1fr_1fr_auto]">
@@ -130,7 +144,7 @@ export default function ManageContractModal({ partyId, onClose }) {
         {/* Testemunhas */}
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-sm font-medium text-white/80">Testemunhas</span>
+            <span className="text-sm font-medium text-white/80">Testemunhas <span className="text-red-400">*</span></span>
             <button
               type="button"
               onClick={() => setTestemunhas((l) => [...l, { nome: '', cpf: '' }])}
@@ -148,6 +162,8 @@ export default function ManageContractModal({ partyId, onClose }) {
             ))}
           </div>
         </div>
+
+        {error && <p className="text-sm text-red-400" role="alert">{error}</p>}
 
         <div className="flex justify-end gap-3 pt-1">
           <Button type="button" variant="ghost" onClick={onClose}>
