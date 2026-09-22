@@ -8,7 +8,8 @@ import PartyFormModal from '../components/PartyFormModal.jsx'
 
 const LABELS = {
   cliente: { title: 'Clientes', singular: 'cliente', empty: 'Nenhum cliente cadastrado ainda.' },
-  fornecedor: { title: 'Fornecedores', singular: 'fornecedor', empty: 'Nenhum fornecedor cadastrado ainda.' }
+  fornecedor: { title: 'Fornecedores', singular: 'fornecedor', empty: 'Nenhum fornecedor cadastrado ainda.' },
+  todos: { title: 'Cadastros', singular: 'cadastro', empty: 'Nenhum cadastro encontrado.' }
 }
 
 export default function PartyList({ kind }) {
@@ -17,14 +18,14 @@ export default function PartyList({ kind }) {
   const contracts = useStore((s) => s.contracts)
   const [query, setQuery] = useState('')
   const [creating, setCreating] = useState(false)
-  const meta = LABELS[kind]
+  const meta = LABELS[kind] || LABELS.todos
 
   const list = useMemo(() => {
-    const visible = visibleParties(user, parties).filter((p) => p.kind === kind)
+    const visible = visibleParties(user, parties).filter((p) => !kind || p.kind === kind)
     const q = query.trim().toLowerCase()
     if (!q) return visible
     return visible.filter(
-      (p) => p.name.toLowerCase().includes(q) || (p.doc || '').toLowerCase().includes(q)
+      (p) => [p.name, p.doc, p.email].some((value) => (value || '').toLowerCase().includes(q))
     )
   }, [user, parties, kind, query])
 
@@ -33,9 +34,7 @@ export default function PartyList({ kind }) {
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">{meta.title}</h1>
-          <p className="text-sm text-muted">
-            Selecione um {meta.singular} para ver contratos e agenda.
-          </p>
+          <p className="text-sm text-muted">Selecione um {meta.singular} para ver contratos e agenda.</p>
         </div>
         {canManage(user) && (
           <Button onClick={() => setCreating(true)}>+ Novo {meta.singular}</Button>
@@ -45,7 +44,7 @@ export default function PartyList({ kind }) {
       <Field label={`Pesquisar ${meta.title.toLowerCase()}`} className="mb-5 max-w-md">
         <Input
           type="search"
-          placeholder={`Pesquisar ${meta.singular} por nome ou documento…`}
+          placeholder={`Pesquisar ${meta.singular} por nome, documento ou e-mail…`}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -53,7 +52,7 @@ export default function PartyList({ kind }) {
 
       {list.length === 0 ? (
         <EmptyState title={query.trim() ? 'Nenhum resultado encontrado.' : meta.empty}>
-          {query.trim() ? 'Tente outro nome ou documento, ou limpe a pesquisa.' : canManage(user) && `Use o botão "Novo ${meta.singular}" para cadastrar.`}
+          {query.trim() ? 'Tente outro nome, documento ou e-mail, ou limpe a pesquisa.' : canManage(user) && `Use o botão "Novo ${meta.singular}" para cadastrar.`}
         </EmptyState>
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -62,9 +61,10 @@ export default function PartyList({ kind }) {
             return (
               <Card as={Link} to={`/parte/${p.id}`} key={p.id} className="block transition-colors hover:border-brd/50 hover:bg-brd/5">
                 <div className="flex items-start justify-between gap-2">
-                  <h2 className="font-semibold text-white">{p.name}</h2>
+                  <h2 className="font-semibold text-white">{p.name || 'Cadastro sem identificação'}</h2>
                   <Badge tone="gray">{p.personType}</Badge>
                 </div>
+                {!kind && <Badge tone={p.kind === 'cliente' ? 'brd' : 'yellow'} className="mt-2">{p.kind === 'cliente' ? 'Cliente' : 'Fornecedor'}</Badge>}
                 <p className="mt-1 text-sm text-muted">{p.doc}</p>
                 <p className="mt-3 text-xs text-muted">
                   {count} contrato{count === 1 ? '' : 's'}
