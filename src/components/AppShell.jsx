@@ -33,7 +33,17 @@ export default function AppShell({ children }) {
 
   return (
     <div className="min-h-full">
-      <a className="skip-link" href="#main-content">Pular para o conteúdo</a>
+      <a
+        className="skip-link"
+        href="#main-content"
+        onClick={(event) => {
+          // O fragmento também representa a rota na publicação do GitHub Pages.
+          event.preventDefault()
+          document.getElementById('main-content')?.focus()
+        }}
+      >
+        Pular para o conteúdo
+      </a>
       <header className="sticky top-0 z-30 border-b border-white/10 bg-black/70 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
           <Link to="/" className="shrink-0">

@@ -16,6 +16,24 @@ npm test         # testes de lógica (permissões, lembrete, taxonomia)
 npm run build    # build de produção
 ```
 
+## Publicação no GitHub Pages
+
+URL: [BRD Pactum](https://vinnitog.github.io/brd-pactum/).
+
+O workflow `pages.yml` testa e compila os PRs para `main`. Após o merge em
+`main`, publica automaticamente a pasta `dist` usando GitHub Actions.
+O repositório deve ter Pages configurado com a origem **GitHub Actions**.
+
+```powershell
+npm.cmd run build:pages
+```
+
+Esse build usa a base `/brd-pactum/` e rotas com fragmento, por exemplo
+`/brd-pactum/#/agenda`, para permitir abrir links e atualizar páginas sem 404.
+O desenvolvimento local mantém suas URLs atuais. A publicação é uma demonstração:
+autenticação real e dados compartilhados via Supabase ainda não estão integrados;
+os dados permanecem no localStorage de cada navegador.
+
 ## Funcionalidades
 
 - **Login diferenciado** — advogados BRD veem todos os cadastros; cada cliente

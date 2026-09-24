@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { Link, MemoryRouter, Route, Routes } from 'react-router-dom'
 
 const storeMocks = vi.hoisted(() => ({
   addReminder: vi.fn(),
@@ -35,6 +35,8 @@ import NewContract from '../src/pages/NewContract.jsx'
 import Dashboard from '../src/pages/Dashboard.jsx'
 import ManageContractModal from '../src/components/ManageContractModal.jsx'
 import PartyFormModal from '../src/components/PartyFormModal.jsx'
+import AppRouter from '../src/components/AppRouter.jsx'
+import AppShell from '../src/components/AppShell.jsx'
 
 let state
 const lawyer = { name: 'Dra. Ana', role: 'advogado' }
@@ -48,6 +50,76 @@ function renderPage(page) {
 function event(overrides = {}) {
   return { id: 'event-1', partyId: 'party-1', type: 'vencimento', date: '2028-02-15', urgency: 'alta', done: false, note: 'Prazo próprio', ...overrides }
 }
+
+describe('roteamento da publicação no GitHub Pages', () => {
+  let originalUrl
+  let originalHistoryState
+
+  function TestRoutes() {
+    return (
+      <Routes>
+        <Route path="/agenda" element={<><h1>Agenda de teste</h1><Link to="/parte/party-1">Abrir cadastro</Link></>} />
+        <Route path="/parte/:id" element={<h1>Cadastro de teste</h1>} />
+      </Routes>
+    )
+  }
+
+  beforeEach(() => {
+    originalUrl = window.location.href
+    originalHistoryState = window.history.state
+  })
+
+  afterEach(() => {
+    cleanup()
+    vi.unstubAllEnvs()
+    window.history.replaceState(originalHistoryState, '', originalUrl)
+  })
+
+  it('abre a rota pelo hash, navega por Link e mantém a rota profunda após remontar', () => {
+    vi.stubEnv('MODE', 'github-pages')
+    window.history.replaceState(null, '', '/brd-pactum/#/agenda')
+    const page = <AppRouter><TestRoutes /></AppRouter>
+    const { unmount } = render(page)
+    expect(screen.getByRole('heading', { name: 'Agenda de teste' })).toBeTruthy()
+
+    fireEvent.click(screen.getByRole('link', { name: 'Abrir cadastro' }))
+    expect(screen.getByRole('heading', { name: 'Cadastro de teste' })).toBeTruthy()
+    expect(window.location.hash).toBe('#/parte/party-1')
+    expect(window.location.pathname).toBe('/brd-pactum/')
+
+    unmount()
+    render(page)
+    expect(screen.getByRole('heading', { name: 'Cadastro de teste' })).toBeTruthy()
+    expect(window.location.hash).toBe('#/parte/party-1')
+  })
+
+  it('usa pathname e navega sem hash no modo de desenvolvimento', () => {
+    vi.stubEnv('MODE', 'development')
+    window.history.replaceState(null, '', '/agenda')
+    render(<AppRouter><TestRoutes /></AppRouter>)
+    expect(screen.getByRole('heading', { name: 'Agenda de teste' })).toBeTruthy()
+
+    fireEvent.click(screen.getByRole('link', { name: 'Abrir cadastro' }))
+    expect(screen.getByRole('heading', { name: 'Cadastro de teste' })).toBeTruthy()
+    expect(window.location.pathname).toBe('/parte/party-1')
+    expect(window.location.hash).toBe('')
+  })
+
+  it('pula para o conteúdo principal sem alterar o hash ou a rota atual', () => {
+    vi.stubEnv('MODE', 'github-pages')
+    window.history.replaceState(null, '', '/brd-pactum/#/agenda')
+    render(<AppRouter><AppShell><TestRoutes /></AppShell></AppRouter>)
+    const skipLink = screen.getByRole('link', { name: 'Pular para o conteúdo' })
+    skipLink.focus()
+
+    fireEvent.click(skipLink)
+
+    expect(document.activeElement).toBe(screen.getByRole('main'))
+    expect(window.location.hash).toBe('#/agenda')
+    expect(window.location.pathname).toBe('/brd-pactum/')
+    expect(screen.getByRole('heading', { name: 'Agenda de teste' })).toBeTruthy()
+  })
+})
 
 function ModalHarness({ children }) {
   const [open, setOpen] = useState(false)
