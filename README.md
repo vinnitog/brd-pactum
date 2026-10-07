@@ -67,3 +67,7 @@ os dados permanecem no localStorage de cada navegador.
 Substituir `src/lib/store.js` por chamadas ao Supabase (auth real + tabelas
 `parties`, `contracts`, `events` com RLS por papel), reaproveitando as mesmas
 assinaturas de função. Mantido fora do escopo inicial por depender de credenciais.
+
+## Automacao de desenvolvimento
+
+Os workflows `develop.yml` e `review.yml` usam os reutilizaveis do `brd-ci`, com Codex/OpenAI. O unico Secret de IA exigido no Pactum e `OPENAI_API_KEY`, configurado em Settings > Secrets and variables > Actions. A chave nunca vai para o frontend. As instrucoes do agente estao em `AGENTS.md`. Gemini Flash permanece na triagem do `brd-ops`.
