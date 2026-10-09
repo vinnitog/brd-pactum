@@ -96,3 +96,7 @@ Ha tambem alertas moderados de runtime em `react-router-dom@6.30.4` (direta) e
 avaliacao e atualizacao controlada das dependencias em lote proprio. O relatorio
 JSON esta em `.tmp/migration-npm-audit.json`, sem credenciais. Nao foi executado
 `npm audit fix` e package-lock.json permaneceu inalterado.
+
+Apos os testes, foram sincronizados os textos finais de documentacao e apenas um
+comentario explicativo em NewContract.jsx (sem mudanca executavel). Os hashes dos
+25 arquivos exportados foram comparados com o checkout principal e coincidem.
