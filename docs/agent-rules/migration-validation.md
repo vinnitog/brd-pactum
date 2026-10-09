@@ -100,3 +100,13 @@ JSON esta em `.tmp/migration-npm-audit.json`, sem credenciais. Nao foi executado
 Apos os testes, foram sincronizados os textos finais de documentacao e apenas um
 comentario explicativo em NewContract.jsx (sem mudanca executavel). Os hashes dos
 25 arquivos exportados foram comparados com o checkout principal e coincidem.
+
+## Integracao com main antes da aprovacao
+
+O PR de promocao identificou divergencia anterior: main ja continha PR33, que
+encaminha TRELLO_API_KEY/TRELLO_TOKEN somente ao desenvolvimento. A resolucao
+preservou essas referencias e TECHTOGS_UTILITIES_SSH_KEY, mantendo a revisao sem
+credenciais Trello. O workflow foi normalizado de finais de linha mistos para LF.
+Esses dois arquivos finais (caller e teste de politica) foram copiados ao mesmo
+clone isolado; os oito testes de politica passaram no checkout e no clone.
+Nenhuma implementacao de produto mudou depois da suite completa de 113 testes.
