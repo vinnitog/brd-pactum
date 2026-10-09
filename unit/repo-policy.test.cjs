@@ -50,13 +50,13 @@ test("project context records stack decision", () => {
 });
 
 
-test("automation delegates to Codex with only the required API secret", () => {
+test("automation delegates to Codex with explicit API and private-library secrets", () => {
   for (const file of ["develop.yml", "review.yml"]) {
     const workflow = read(`.github/workflows/${file}`);
     const calls = [...workflow.matchAll(/uses:\s*(\S+)/g)].map((match) => match[1]);
     assert.deepEqual(calls, [`vinnitog/brd-ci/.github/workflows/${file}@main`]);
     const secrets = [...workflow.matchAll(/secrets\.([A-Z_]+)/g)].map((match) => match[1]);
-    assert.deepEqual(secrets, ["OPENAI_API_KEY"]);
+    assert.deepEqual(secrets, ["OPENAI_API_KEY", "TECHTOGS_UTILITIES_SSH_KEY"]);
     assert.doesNotMatch(workflow, /secrets:\s*inherit|id-token:\s*write/);
   }
   assert.match(read(".github/workflows/develop.yml"), /provider: openai/);
