@@ -17,10 +17,10 @@ disponivel, clone-a ao lado deste projeto. Para versoes diferentes entre consumi
 ```powershell
 # Na raiz deste projeto:
 # Somente se nao houver um checkout compartilhado adequado:
-git clone git@github.com:vinnitog/techtogs-utilities.git ../techtogs-utilities
+git -c core.autocrlf=false clone --no-checkout git@github.com:vinnitog/techtogs-utilities.git ../techtogs-utilities-bd46a3d293ae
 # Somente no clone novo, antes de usa-lo:
 $utilitiesPin = (Get-Content -Raw .techtogs-utilities.json | ConvertFrom-Json).libraryCommit
-git -C ../techtogs-utilities checkout --detach $utilitiesPin
+git -C ../techtogs-utilities-bd46a3d293ae -c core.autocrlf=false checkout --detach $utilitiesPin
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/bootstrap-utilities.ps1
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/bootstrap-utilities.ps1 -Action verify
 ```
@@ -75,3 +75,20 @@ de senior-dev em outro checkout compartilhado deve ser corrigida centralmente,
 sem alterar o arquivo nem os hashes deste consumidor para contornar a verificacao.
 As regras locais sao lidas por AGENTS.md; `projectRules` do manifesto permanece
 inalterado para preservar o fingerprint e o historico de rollback da instalacao.
+
+## Atualizacao central — 2026-10-09
+
+Pin ativo: `bd46a3d293aec0c85bdc5a1be6b1a2c6477438a7`. A divergencia de senior-dev foi corrigida nesta versao; notas anteriores sobre o bloqueio do checkout antigo sao historicas. O checkout antigo e suas edicoes locais permanecem preservados.
+
+O bootstrap procura por padrao `../techtogs-utilities-bd46a3d293ae`, verificando o pin completo e os hashes. `-UtilitiesPath` e `TECHTOGS_UTILITIES_PATH` continuam aceitos; use a versao fixada. Em outra maquina:
+
+```powershell
+git -c core.autocrlf=false clone --no-checkout git@github.com:vinnitog/techtogs-utilities.git ../techtogs-utilities-bd46a3d293ae
+git -C ../techtogs-utilities-bd46a3d293ae -c core.autocrlf=false checkout --detach bd46a3d293aec0c85bdc5a1be6b1a2c6477438a7
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/bootstrap-utilities.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/bootstrap-utilities.ps1 -Action verify
+```
+
+A chave privada de CI existente consome `libraryCommit`; nao versionar credenciais nem junctions. Publique manifesto, bootstrap, workflow de autenticacao, regras e remocoes da migracao juntos, pelo fluxo Git do projeto, preservando outras alteracoes.
+
+`-Action rollback` atua apenas na instalacao deste checkout novo. Para retornar ao estado local exato anterior a esta transicao, use o journal privado da transicao e seu comando restore, que restaura os metadados e links originais depois do rollback novo. O rollback do checkout antigo nao deve ser aplicado aos novos links. Nao restaure descobertas retiradas do manifesto atual.
