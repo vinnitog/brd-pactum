@@ -50,13 +50,14 @@ test("project context records stack decision", () => {
 });
 
 
-test("automation scopes document credentials to development only", () => {
+test("automation scopes document credentials to development and keeps private-library access explicit", () => {
   for (const file of ["develop.yml", "review.yml"]) {
     const workflow = read(`.github/workflows/${file}`);
     const calls = [...workflow.matchAll(/uses:\s*(\S+)/g)].map((match) => match[1]);
     assert.deepEqual(calls, [`vinnitog/brd-ci/.github/workflows/${file}@main`]);
     const secrets = [...workflow.matchAll(/secrets\.([A-Z_]+)/g)].map((match) => match[1]);
-    const expected = file === "develop.yml" ? ["OPENAI_API_KEY", "TRELLO_API_KEY", "TRELLO_TOKEN"] : ["OPENAI_API_KEY"];
+    const expected = ["OPENAI_API_KEY", "TECHTOGS_UTILITIES_SSH_KEY"];
+    if (file === "develop.yml") expected.push("TRELLO_API_KEY", "TRELLO_TOKEN");
     assert.deepEqual(secrets, expected);
     assert.doesNotMatch(workflow, /secrets:\s*inherit|id-token:\s*write/);
   }

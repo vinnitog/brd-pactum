@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "projectId": "brd-pactum",
+  "responsibility": "Gestao juridica de partes, contratos, agenda de vencimentos, lembretes e dashboard.",
+  "capabilities": [
+    "frontend",
+    "personal-data",
+    "legal",
+    "planned-auth",
+    "planned-supabase",
+    "accessibility"
+  ]
+}

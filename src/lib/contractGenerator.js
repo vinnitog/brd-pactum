@@ -1,7 +1,8 @@
 // Gera um texto-base do contrato a partir dos campos preenchidos na elaboração.
 // É um rascunho estruturado para revisão dos advogados (não substitui a peça
 // final). A integração com modelos/IA entra em fase posterior.
-import { formatCurrencyBR, formatDateExtenso, todayLocalISO } from './format.js'
+import { formatCurrencyBR, formatDateBR, formatDateExtenso, todayLocalISO } from './format.js'
+import { representanteFromParty } from './party.js'
 
 export function generateContractText(contract, party) {
   const l = []
@@ -10,7 +11,7 @@ export function generateContractText(contract, party) {
   l.push('')
 
   l.push('DAS PARTES')
-  if (contract.parte?.qualificacao) {
+  if (contract.parte?.qualificacao != null) {
     l.push(contract.parte.qualificacao)
   } else if (party) {
     l.push(
@@ -19,11 +20,8 @@ export function generateContractText(contract, party) {
       }, com endereço em ${party.address || '—'}.`
     )
   }
-  if (contract.parte?.representante) {
-    l.push(`Neste ato representada por ${contract.parte.representante}.`)
-  } else if (party?.repLegal?.nome) {
-    l.push(`Neste ato representada por ${party.repLegal.nome}, ${party.repLegal.cargo}, CPF ${party.repLegal.cpf}.`)
-  }
+  const representante = contract.parte?.representante ?? representanteFromParty(party)
+  if (representante) l.push(`Neste ato representada por ${representante}.`)
   l.push('')
 
   l.push('DO OBJETO')
@@ -41,6 +39,7 @@ export function generateContractText(contract, party) {
 
   l.push('DO PRAZO')
   l.push(`Prazo: ${contract.prazo || '—'}.`)
+  if (contract.vencimento) l.push(`Vencimento: ${formatDateBR(contract.vencimento)}.`)
   l.push('')
 
   l.push('DA MULTA')

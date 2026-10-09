@@ -1,0 +1,545 @@
+{
+  "schemaVersion": 1,
+  "projectId": "brd-pactum",
+  "repository": "git@github.com:vinnitog/techtogs-utilities.git",
+  "profiles": [
+    "core",
+    "planning",
+    "frontend",
+    "javascript",
+    "react",
+    "web-qa",
+    "privacy",
+    "infra"
+  ],
+  "skills": {
+    "accessibility-compliance": {
+      "path": "skills/accessibility-compliance",
+      "sha256": "3723b8003eddbf150106a495070521ba52692946f19cfc4a848d4497a5e96eaa"
+    },
+    "ask-matt": {
+      "path": "skills/ask-matt",
+      "sha256": "7dbc1d64d71ff6a7c1d3842c35f6a7591d0b26bbc26a3ea7190d55e4f347886d"
+    },
+    "clean-code": {
+      "path": "skills/clean-code",
+      "sha256": "6639f9d94d4d771cc88896ff4f22a28b7472629287f84a4062611794cb5cb10c"
+    },
+    "code-review": {
+      "path": "skills/code-review",
+      "sha256": "fdabb599d324f4b8f2a02b580dd3a92888f3087d8d7f27dab5f334c918c1f73e"
+    },
+    "code-reviewer": {
+      "path": "skills/code-reviewer",
+      "sha256": "c97208bee122f6f4f9df2a705f3fad3d8c6241ba54495e96eda8f6e153144957"
+    },
+    "codebase-design": {
+      "path": "skills/codebase-design",
+      "sha256": "4b5db0f38a49ff975f3207486b2176bd244c374818fbae58cf7c0c4d43b44546"
+    },
+    "deployment-pipeline-design": {
+      "path": "skills/deployment-pipeline-design",
+      "sha256": "09d3a41bf742cadcf0350048ea7f50225097bb2afc45e04a3fe287d1f21da107"
+    },
+    "design-system-patterns": {
+      "path": "skills/design-system-patterns",
+      "sha256": "9178e6324a55d02f84387cfa385b29929b8aab262448bdf3a99c530cad57fd86"
+    },
+    "diagnosing-bugs": {
+      "path": "skills/diagnosing-bugs",
+      "sha256": "2996a3b4687eb8bb84809b8cdd6e9b5b384e7deffce573cbbaa87f5ecb93dfd7"
+    },
+    "domain-modeling": {
+      "path": "skills/domain-modeling",
+      "sha256": "6161addd31741affe2b91160310a587ce7ef17df74406a5ba92a68bb14b49608"
+    },
+    "e2e-testing-patterns": {
+      "path": "skills/e2e-testing-patterns",
+      "sha256": "6b7eca3f39a2439a49270965ae0258ac07c468fd3127b462bd14585df339f09b"
+    },
+    "error-handling-patterns": {
+      "path": "skills/error-handling-patterns",
+      "sha256": "779e6dde9c0e91d79ffb33a4317b14c501bdc6c154002f8c4916b499db3b88b7"
+    },
+    "github-actions-templates": {
+      "path": "skills/github-actions-templates",
+      "sha256": "86b597247ac32701d22e681b2c3574641aad322121877aa11f6d7d89605010dc"
+    },
+    "grill-me": {
+      "path": "skills/grill-me",
+      "sha256": "5de88d108fe8664dd1c02f6cf1d00e2342cf932c57195e5cf6bac3618aef1561"
+    },
+    "grill-with-docs": {
+      "path": "skills/grill-with-docs",
+      "sha256": "0671d9153c6f95f89ed780579472289cd24cf37cc815cfde93bf4097f756b97e"
+    },
+    "grilling": {
+      "path": "skills/grilling",
+      "sha256": "01531dfba8837d2b38cda626c65fa44a7967752311cfc2a2cd4ac7d766aa18be"
+    },
+    "handoff": {
+      "path": "skills/handoff",
+      "sha256": "2c70b2b8d6c9f144cd5ae8c6a87858f86d2db10d32d1559178f0f300f5f25d1c"
+    },
+    "impeccable": {
+      "path": "skills/impeccable",
+      "sha256": "18c1422a7ed31d4cb3e22e45557a9a494ed91ba1f9553feb7d63a1b077c9e084"
+    },
+    "implement": {
+      "path": "skills/implement",
+      "sha256": "59713ee25a9ded02658863ff9e725a0f5bc5ed955b1aeac3c3dbc69eae6aea3e"
+    },
+    "implement-spec": {
+      "path": "skills/implement-spec",
+      "sha256": "c7cd4f8b765d4f87fce7f0555de15ce22ffba136c444a9d6d323d67dd6e3e28f"
+    },
+    "improve-codebase-architecture": {
+      "path": "skills/improve-codebase-architecture",
+      "sha256": "aa6e0705570463a9cd812a2f37a251ad5782ff2ef87d38e4fce0356fc45fe0c2"
+    },
+    "javascript-testing-patterns": {
+      "path": "skills/javascript-testing-patterns",
+      "sha256": "b20a1d484d23a92e7612f2e707a938a3edd19a43d0bc5549b19498436158ca4a"
+    },
+    "lgpd-anonymization": {
+      "path": "skills/lgpd-anonymization",
+      "sha256": "d7e9f7d3a1da330bb470eb6c1d34b9ecb9efe4134060010ac8148719ef5052dd"
+    },
+    "lgpd-audit": {
+      "path": "skills/lgpd-audit",
+      "sha256": "a9d19478101daa243cf40c494b71dc231fc8c56685e407b006e656392025a794"
+    },
+    "lgpd-audit-logging": {
+      "path": "skills/lgpd-audit-logging",
+      "sha256": "29972b0d078714f055f8db9c34ebfc274696201fd8744c78c3a36950cc3021a6"
+    },
+    "lgpd-check": {
+      "path": "skills/lgpd-check",
+      "sha256": "6d12d93f3b563a1ad3727c19fac662172a6a8853aebced9fe8ccfd3c7013cbca"
+    },
+    "lgpd-consent-schema": {
+      "path": "skills/lgpd-consent-schema",
+      "sha256": "8a2bd3b6972b108e0d36567e78f3e590b30afab15f2299bfacf48ef1025b2970"
+    },
+    "lgpd-data-mapping": {
+      "path": "skills/lgpd-data-mapping",
+      "sha256": "9f461ee17bf82553b95b03d902b1f002d495131eb5aebfbcf0e9db61c3cd3e70"
+    },
+    "lgpd-dpa": {
+      "path": "skills/lgpd-dpa",
+      "sha256": "5d22dec319f105abb06b6aeca8eb556bedc83d3d56cba45b958db15d272c53e7"
+    },
+    "lgpd-dpo-encarregado": {
+      "path": "skills/lgpd-dpo-encarregado",
+      "sha256": "4416e925dee71fa78fc6be6da4b931c73ce58aa7949cab76c3e9333d80735ad0"
+    },
+    "lgpd-dsar": {
+      "path": "skills/lgpd-dsar",
+      "sha256": "50010498d50651df1b27395c5a8e953f9e4958c0f6742a96e97e138a15d1d484"
+    },
+    "lgpd-eca-digital-minors": {
+      "path": "skills/lgpd-eca-digital-minors",
+      "sha256": "c769b1f73b70c6bc3ef445c8513d471189145136314028d464f3d48de5d7fadb"
+    },
+    "lgpd-encryption-keys": {
+      "path": "skills/lgpd-encryption-keys",
+      "sha256": "6ff1348f4c65c918d7307493cafd68895cf7b56ef63f30594bc61eaaad7f2150"
+    },
+    "lgpd-incident-response": {
+      "path": "skills/lgpd-incident-response",
+      "sha256": "716103bfba4ab57109a55678449a8aca93f33f038c66149f8bda7581b49e78e3"
+    },
+    "lgpd-international-transfer": {
+      "path": "skills/lgpd-international-transfer",
+      "sha256": "aa89d991789045fdd0a8e67171c47960f94348e98f23c3d570d7b7aaea9b1a65"
+    },
+    "lgpd-legacy-retrofit": {
+      "path": "skills/lgpd-legacy-retrofit",
+      "sha256": "9262985047fb5f6ac418f68797eec031e8a2901a777cb3be30cb7f0c6c05284c"
+    },
+    "lgpd-legal-basis": {
+      "path": "skills/lgpd-legal-basis",
+      "sha256": "e151a7971149c161b247c59d167e979b9ffec2c7fae4656178e2195b638b04cc"
+    },
+    "lgpd-privacy-policy": {
+      "path": "skills/lgpd-privacy-policy",
+      "sha256": "106344464a4c7bd5639bb44afb4a8aa2d7887743336a43870de3b737bb6c20b8"
+    },
+    "lgpd-retention-erasure": {
+      "path": "skills/lgpd-retention-erasure",
+      "sha256": "d2716a83c0f4864366aa9ad35d74c44d39e8195f952532a0fc06972e5bdd405c"
+    },
+    "lgpd-ripd": {
+      "path": "skills/lgpd-ripd",
+      "sha256": "3d7753e77dadd17b41c9c727a8868e6720711fb1b0597bad33fe66ef50d98f76"
+    },
+    "lgpd-ropa": {
+      "path": "skills/lgpd-ropa",
+      "sha256": "701321a8d6ab3d89c2e8f2fe6eaea6488d99941a3591a9e877bd69a2af26e2bc"
+    },
+    "lgpd-vendor-audit": {
+      "path": "skills/lgpd-vendor-audit",
+      "sha256": "9c85e836ef939140b6e3abc3715e8dba2e6af22a326bc4a340f8ed2c34b5e71d"
+    },
+    "pr": {
+      "path": "skills/pr",
+      "sha256": "bb341277e29cea78e0df63b7fb30ef039b0ef17ef69f2352c500b1f66b7125fa"
+    },
+    "prototype": {
+      "path": "skills/prototype",
+      "sha256": "e757680f1ea8065616754d84f100a5191488b6c80247369c9a005360aaca125d"
+    },
+    "qa-automate": {
+      "path": "skills/qa-automate",
+      "sha256": "d2bc5506c81e15d74abdef0a7c092a20f19563658c09c2f23f13f76d35909877"
+    },
+    "qa-senior": {
+      "path": "skills/qa-senior",
+      "sha256": "9d5636a925d9d7e84bf46a25022e1864b7c051140ac827e6bc21abe4d994f5d8"
+    },
+    "react-state-management": {
+      "path": "skills/react-state-management",
+      "sha256": "2328771a3ac01323cfca71f6eae65a58bebff70f0d8dce12f2a8890139fba3e9"
+    },
+    "research": {
+      "path": "skills/research",
+      "sha256": "1253479e3427504d9c3bf55bdf492ad276f6dac8512dc6d621faa2d10dbea30f"
+    },
+    "responsive-design": {
+      "path": "skills/responsive-design",
+      "sha256": "ef2de6cceddb285574a33d256ae6b166a069190ef6abd2994b30cb2fb21cc91d"
+    },
+    "retro": {
+      "path": "skills/retro",
+      "sha256": "1020df98460adde8431c21b4b87a720b7c15acfe3a890443ac5e8d0311c4875a"
+    },
+    "sast-configuration": {
+      "path": "skills/sast-configuration",
+      "sha256": "ec5e3961937b3acd471791e2afc4361f678ca8de6d7ebc055fbce47589ffe0e4"
+    },
+    "screen-reader-testing": {
+      "path": "skills/screen-reader-testing",
+      "sha256": "df2f0ad4d8d96663211b298868d0cb08a541c57ba332eab3f3141e31fd5a8c16"
+    },
+    "secrets-management": {
+      "path": "skills/secrets-management",
+      "sha256": "40a0fbfb683c0b42737cff29ecb28eb6752daff6c216003470279edd00fc0da7"
+    },
+    "senior-dev": {
+      "path": "skills/senior-dev",
+      "sha256": "927fa9797461dbbd949c2af2150198678d3d640a31d0e27abccb8b47722ca140"
+    },
+    "setup-matt-pocock-skills": {
+      "path": "skills/setup-matt-pocock-skills",
+      "sha256": "7b384b59856c84ed66dbf2cae9b11592149ae17195c2f14691336976468f6f84"
+    },
+    "tdd": {
+      "path": "skills/tdd",
+      "sha256": "360e919508603b2d22cb4ae537400aa253871fba89e4e21d0de25ab500ac3921"
+    },
+    "test-scenarios": {
+      "path": "skills/test-scenarios",
+      "sha256": "4ff8a8692cca670978f6848c09d02953e4bcebdeb1c6864cc6992825cce07ce1"
+    },
+    "to-spec": {
+      "path": "skills/to-spec",
+      "sha256": "f25cd40b2734079ff9cad5464d1c7f3d7d57077f1146784b820928fc29409bd2"
+    },
+    "to-tickets": {
+      "path": "skills/to-tickets",
+      "sha256": "ecaccf173a2529e005269e7aefba7cc60b5ab3d24cd6fe8f0a0e0878ad318f73"
+    },
+    "triage": {
+      "path": "skills/triage",
+      "sha256": "2774ce15ad3eeba9a43948cc689c74269226e00e7bf910c435a488b7a641793d"
+    },
+    "ui-ux-expert": {
+      "path": "skills/ui-ux-expert",
+      "sha256": "d01d7211a1b63dff9a4440f8769c536cfa6caa4fb7f980df88e9a6c0be4db25d"
+    },
+    "wayfinder": {
+      "path": "skills/wayfinder",
+      "sha256": "8df0edacf72c4779de266bd9a432fe457c3af9a8df8c0e00c13aefb77b7b9f04"
+    },
+    "web-component-design": {
+      "path": "skills/web-component-design",
+      "sha256": "5ad8bf3f572e55a4ef72ea6f42904e75ec788647dca93ee1819e4407f8181068"
+    },
+    "writing-for-agents": {
+      "path": "skills/writing-for-agents",
+      "sha256": "9d87367a3004faa68ca965274dbd168f2531deb47279ecf086e13eee18ba8278"
+    }
+  },
+  "bindings": {
+    ".agents/skills/accessibility-compliance": {
+      "path": "skills/accessibility-compliance",
+      "sha256": "3723b8003eddbf150106a495070521ba52692946f19cfc4a848d4497a5e96eaa",
+      "originalHash": "3723b8003eddbf150106a495070521ba52692946f19cfc4a848d4497a5e96eaa"
+    },
+    ".agents/skills/ask-matt": {
+      "path": "skills/ask-matt",
+      "sha256": "7dbc1d64d71ff6a7c1d3842c35f6a7591d0b26bbc26a3ea7190d55e4f347886d"
+    },
+    ".agents/skills/clean-code": {
+      "path": "skills/clean-code",
+      "sha256": "6639f9d94d4d771cc88896ff4f22a28b7472629287f84a4062611794cb5cb10c"
+    },
+    ".agents/skills/code-review": {
+      "path": "skills/code-review",
+      "sha256": "fdabb599d324f4b8f2a02b580dd3a92888f3087d8d7f27dab5f334c918c1f73e"
+    },
+    ".agents/skills/code-reviewer": {
+      "path": "skills/code-reviewer",
+      "sha256": "c97208bee122f6f4f9df2a705f3fad3d8c6241ba54495e96eda8f6e153144957"
+    },
+    ".agents/skills/codebase-design": {
+      "path": "skills/codebase-design",
+      "sha256": "4b5db0f38a49ff975f3207486b2176bd244c374818fbae58cf7c0c4d43b44546",
+      "originalHash": "4b5db0f38a49ff975f3207486b2176bd244c374818fbae58cf7c0c4d43b44546"
+    },
+    ".agents/skills/deployment-pipeline-design": {
+      "path": "skills/deployment-pipeline-design",
+      "sha256": "09d3a41bf742cadcf0350048ea7f50225097bb2afc45e04a3fe287d1f21da107"
+    },
+    ".agents/skills/design-system-patterns": {
+      "path": "skills/design-system-patterns",
+      "sha256": "9178e6324a55d02f84387cfa385b29929b8aab262448bdf3a99c530cad57fd86"
+    },
+    ".agents/skills/diagnosing-bugs": {
+      "path": "skills/diagnosing-bugs",
+      "sha256": "2996a3b4687eb8bb84809b8cdd6e9b5b384e7deffce573cbbaa87f5ecb93dfd7",
+      "originalHash": "2996a3b4687eb8bb84809b8cdd6e9b5b384e7deffce573cbbaa87f5ecb93dfd7"
+    },
+    ".agents/skills/domain-modeling": {
+      "path": "skills/domain-modeling",
+      "sha256": "6161addd31741affe2b91160310a587ce7ef17df74406a5ba92a68bb14b49608",
+      "originalHash": "6161addd31741affe2b91160310a587ce7ef17df74406a5ba92a68bb14b49608"
+    },
+    ".agents/skills/e2e-testing-patterns": {
+      "path": "skills/e2e-testing-patterns",
+      "sha256": "6b7eca3f39a2439a49270965ae0258ac07c468fd3127b462bd14585df339f09b",
+      "originalHash": "6b7eca3f39a2439a49270965ae0258ac07c468fd3127b462bd14585df339f09b"
+    },
+    ".agents/skills/error-handling-patterns": {
+      "path": "skills/error-handling-patterns",
+      "sha256": "779e6dde9c0e91d79ffb33a4317b14c501bdc6c154002f8c4916b499db3b88b7"
+    },
+    ".agents/skills/github-actions-templates": {
+      "path": "skills/github-actions-templates",
+      "sha256": "86b597247ac32701d22e681b2c3574641aad322121877aa11f6d7d89605010dc"
+    },
+    ".agents/skills/grill-me": {
+      "path": "skills/grill-me",
+      "sha256": "5de88d108fe8664dd1c02f6cf1d00e2342cf932c57195e5cf6bac3618aef1561",
+      "originalHash": "5de88d108fe8664dd1c02f6cf1d00e2342cf932c57195e5cf6bac3618aef1561"
+    },
+    ".agents/skills/grill-with-docs": {
+      "path": "skills/grill-with-docs",
+      "sha256": "0671d9153c6f95f89ed780579472289cd24cf37cc815cfde93bf4097f756b97e"
+    },
+    ".agents/skills/grilling": {
+      "path": "skills/grilling",
+      "sha256": "01531dfba8837d2b38cda626c65fa44a7967752311cfc2a2cd4ac7d766aa18be"
+    },
+    ".agents/skills/handoff": {
+      "path": "skills/handoff",
+      "sha256": "2c70b2b8d6c9f144cd5ae8c6a87858f86d2db10d32d1559178f0f300f5f25d1c"
+    },
+    ".agents/skills/impeccable": {
+      "path": "skills/impeccable",
+      "sha256": "18c1422a7ed31d4cb3e22e45557a9a494ed91ba1f9553feb7d63a1b077c9e084"
+    },
+    ".agents/skills/implement": {
+      "path": "skills/implement",
+      "sha256": "59713ee25a9ded02658863ff9e725a0f5bc5ed955b1aeac3c3dbc69eae6aea3e"
+    },
+    ".agents/skills/implement-spec": {
+      "path": "skills/implement-spec",
+      "sha256": "c7cd4f8b765d4f87fce7f0555de15ce22ffba136c444a9d6d323d67dd6e3e28f"
+    },
+    ".agents/skills/improve-codebase-architecture": {
+      "path": "skills/improve-codebase-architecture",
+      "sha256": "aa6e0705570463a9cd812a2f37a251ad5782ff2ef87d38e4fce0356fc45fe0c2"
+    },
+    ".agents/skills/javascript-testing-patterns": {
+      "path": "skills/javascript-testing-patterns",
+      "sha256": "b20a1d484d23a92e7612f2e707a938a3edd19a43d0bc5549b19498436158ca4a",
+      "originalHash": "b20a1d484d23a92e7612f2e707a938a3edd19a43d0bc5549b19498436158ca4a"
+    },
+    ".agents/skills/lgpd-anonymization": {
+      "path": "skills/lgpd-anonymization",
+      "sha256": "d7e9f7d3a1da330bb470eb6c1d34b9ecb9efe4134060010ac8148719ef5052dd"
+    },
+    ".agents/skills/lgpd-audit": {
+      "path": "skills/lgpd-audit",
+      "sha256": "a9d19478101daa243cf40c494b71dc231fc8c56685e407b006e656392025a794"
+    },
+    ".agents/skills/lgpd-audit-logging": {
+      "path": "skills/lgpd-audit-logging",
+      "sha256": "29972b0d078714f055f8db9c34ebfc274696201fd8744c78c3a36950cc3021a6"
+    },
+    ".agents/skills/lgpd-check": {
+      "path": "skills/lgpd-check",
+      "sha256": "6d12d93f3b563a1ad3727c19fac662172a6a8853aebced9fe8ccfd3c7013cbca"
+    },
+    ".agents/skills/lgpd-consent-schema": {
+      "path": "skills/lgpd-consent-schema",
+      "sha256": "8a2bd3b6972b108e0d36567e78f3e590b30afab15f2299bfacf48ef1025b2970"
+    },
+    ".agents/skills/lgpd-data-mapping": {
+      "path": "skills/lgpd-data-mapping",
+      "sha256": "9f461ee17bf82553b95b03d902b1f002d495131eb5aebfbcf0e9db61c3cd3e70"
+    },
+    ".agents/skills/lgpd-dpa": {
+      "path": "skills/lgpd-dpa",
+      "sha256": "5d22dec319f105abb06b6aeca8eb556bedc83d3d56cba45b958db15d272c53e7"
+    },
+    ".agents/skills/lgpd-dpo-encarregado": {
+      "path": "skills/lgpd-dpo-encarregado",
+      "sha256": "4416e925dee71fa78fc6be6da4b931c73ce58aa7949cab76c3e9333d80735ad0"
+    },
+    ".agents/skills/lgpd-dsar": {
+      "path": "skills/lgpd-dsar",
+      "sha256": "50010498d50651df1b27395c5a8e953f9e4958c0f6742a96e97e138a15d1d484"
+    },
+    ".agents/skills/lgpd-eca-digital-minors": {
+      "path": "skills/lgpd-eca-digital-minors",
+      "sha256": "c769b1f73b70c6bc3ef445c8513d471189145136314028d464f3d48de5d7fadb"
+    },
+    ".agents/skills/lgpd-encryption-keys": {
+      "path": "skills/lgpd-encryption-keys",
+      "sha256": "6ff1348f4c65c918d7307493cafd68895cf7b56ef63f30594bc61eaaad7f2150"
+    },
+    ".agents/skills/lgpd-incident-response": {
+      "path": "skills/lgpd-incident-response",
+      "sha256": "716103bfba4ab57109a55678449a8aca93f33f038c66149f8bda7581b49e78e3"
+    },
+    ".agents/skills/lgpd-international-transfer": {
+      "path": "skills/lgpd-international-transfer",
+      "sha256": "aa89d991789045fdd0a8e67171c47960f94348e98f23c3d570d7b7aaea9b1a65"
+    },
+    ".agents/skills/lgpd-legacy-retrofit": {
+      "path": "skills/lgpd-legacy-retrofit",
+      "sha256": "9262985047fb5f6ac418f68797eec031e8a2901a777cb3be30cb7f0c6c05284c"
+    },
+    ".agents/skills/lgpd-legal-basis": {
+      "path": "skills/lgpd-legal-basis",
+      "sha256": "e151a7971149c161b247c59d167e979b9ffec2c7fae4656178e2195b638b04cc"
+    },
+    ".agents/skills/lgpd-privacy-policy": {
+      "path": "skills/lgpd-privacy-policy",
+      "sha256": "106344464a4c7bd5639bb44afb4a8aa2d7887743336a43870de3b737bb6c20b8"
+    },
+    ".agents/skills/lgpd-retention-erasure": {
+      "path": "skills/lgpd-retention-erasure",
+      "sha256": "d2716a83c0f4864366aa9ad35d74c44d39e8195f952532a0fc06972e5bdd405c"
+    },
+    ".agents/skills/lgpd-ripd": {
+      "path": "skills/lgpd-ripd",
+      "sha256": "3d7753e77dadd17b41c9c727a8868e6720711fb1b0597bad33fe66ef50d98f76"
+    },
+    ".agents/skills/lgpd-ropa": {
+      "path": "skills/lgpd-ropa",
+      "sha256": "701321a8d6ab3d89c2e8f2fe6eaea6488d99941a3591a9e877bd69a2af26e2bc"
+    },
+    ".agents/skills/lgpd-vendor-audit": {
+      "path": "skills/lgpd-vendor-audit",
+      "sha256": "9c85e836ef939140b6e3abc3715e8dba2e6af22a326bc4a340f8ed2c34b5e71d"
+    },
+    ".agents/skills/pr": {
+      "path": "skills/pr",
+      "sha256": "bb341277e29cea78e0df63b7fb30ef039b0ef17ef69f2352c500b1f66b7125fa"
+    },
+    ".agents/skills/prototype": {
+      "path": "skills/prototype",
+      "sha256": "e757680f1ea8065616754d84f100a5191488b6c80247369c9a005360aaca125d"
+    },
+    ".agents/skills/qa-automate": {
+      "path": "skills/qa-automate",
+      "sha256": "d2bc5506c81e15d74abdef0a7c092a20f19563658c09c2f23f13f76d35909877"
+    },
+    ".agents/skills/qa-senior": {
+      "path": "skills/qa-senior",
+      "sha256": "9d5636a925d9d7e84bf46a25022e1864b7c051140ac827e6bc21abe4d994f5d8"
+    },
+    ".agents/skills/react-state-management": {
+      "path": "skills/react-state-management",
+      "sha256": "2328771a3ac01323cfca71f6eae65a58bebff70f0d8dce12f2a8890139fba3e9"
+    },
+    ".agents/skills/research": {
+      "path": "skills/research",
+      "sha256": "1253479e3427504d9c3bf55bdf492ad276f6dac8512dc6d621faa2d10dbea30f"
+    },
+    ".agents/skills/responsive-design": {
+      "path": "skills/responsive-design",
+      "sha256": "ef2de6cceddb285574a33d256ae6b166a069190ef6abd2994b30cb2fb21cc91d"
+    },
+    ".agents/skills/retro": {
+      "path": "skills/retro",
+      "sha256": "1020df98460adde8431c21b4b87a720b7c15acfe3a890443ac5e8d0311c4875a"
+    },
+    ".agents/skills/sast-configuration": {
+      "path": "skills/sast-configuration",
+      "sha256": "ec5e3961937b3acd471791e2afc4361f678ca8de6d7ebc055fbce47589ffe0e4",
+      "originalHash": "ec5e3961937b3acd471791e2afc4361f678ca8de6d7ebc055fbce47589ffe0e4"
+    },
+    ".agents/skills/screen-reader-testing": {
+      "path": "skills/screen-reader-testing",
+      "sha256": "df2f0ad4d8d96663211b298868d0cb08a541c57ba332eab3f3141e31fd5a8c16"
+    },
+    ".agents/skills/secrets-management": {
+      "path": "skills/secrets-management",
+      "sha256": "40a0fbfb683c0b42737cff29ecb28eb6752daff6c216003470279edd00fc0da7"
+    },
+    ".agents/skills/senior-dev": {
+      "path": "skills/senior-dev",
+      "sha256": "927fa9797461dbbd949c2af2150198678d3d640a31d0e27abccb8b47722ca140"
+    },
+    ".agents/skills/setup-matt-pocock-skills": {
+      "path": "skills/setup-matt-pocock-skills",
+      "sha256": "7b384b59856c84ed66dbf2cae9b11592149ae17195c2f14691336976468f6f84"
+    },
+    ".agents/skills/tdd": {
+      "path": "skills/tdd",
+      "sha256": "360e919508603b2d22cb4ae537400aa253871fba89e4e21d0de25ab500ac3921",
+      "originalHash": "360e919508603b2d22cb4ae537400aa253871fba89e4e21d0de25ab500ac3921"
+    },
+    ".agents/skills/test-scenarios": {
+      "path": "skills/test-scenarios",
+      "sha256": "4ff8a8692cca670978f6848c09d02953e4bcebdeb1c6864cc6992825cce07ce1"
+    },
+    ".agents/skills/to-spec": {
+      "path": "skills/to-spec",
+      "sha256": "f25cd40b2734079ff9cad5464d1c7f3d7d57077f1146784b820928fc29409bd2"
+    },
+    ".agents/skills/to-tickets": {
+      "path": "skills/to-tickets",
+      "sha256": "ecaccf173a2529e005269e7aefba7cc60b5ab3d24cd6fe8f0a0e0878ad318f73"
+    },
+    ".agents/skills/triage": {
+      "path": "skills/triage",
+      "sha256": "2774ce15ad3eeba9a43948cc689c74269226e00e7bf910c435a488b7a641793d"
+    },
+    ".agents/skills/ui-ux-expert": {
+      "path": "skills/ui-ux-expert",
+      "sha256": "d01d7211a1b63dff9a4440f8769c536cfa6caa4fb7f980df88e9a6c0be4db25d"
+    },
+    ".agents/skills/wayfinder": {
+      "path": "skills/wayfinder",
+      "sha256": "8df0edacf72c4779de266bd9a432fe457c3af9a8df8c0e00c13aefb77b7b9f04"
+    },
+    ".agents/skills/web-component-design": {
+      "path": "skills/web-component-design",
+      "sha256": "5ad8bf3f572e55a4ef72ea6f42904e75ec788647dca93ee1819e4407f8181068"
+    },
+    ".agents/skills/writing-for-agents": {
+      "path": "skills/writing-for-agents",
+      "sha256": "9d87367a3004faa68ca965274dbd168f2531deb47279ecf086e13eee18ba8278"
+    }
+  },
+  "projectRules": [],
+  "retired": [],
+  "retiredHashes": {},
+  "retiredRules": {},
+  "libraryCommit": "547b07aa1c645f8f7517c908b330305242c350fb"
+}
