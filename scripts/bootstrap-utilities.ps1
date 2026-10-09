@@ -9,10 +9,13 @@ $manifestPath = Join-Path $projectRoot '.techtogs-utilities.json'
 if (-not (Test-Path -LiteralPath $manifestPath)) { throw 'Manifesto .techtogs-utilities.json ausente.' }
 $consumerManifest = Get-Content -Raw -LiteralPath $manifestPath | ConvertFrom-Json
 if (-not $UtilitiesPath) { $UtilitiesPath = $env:TECHTOGS_UTILITIES_PATH }
-if (-not $UtilitiesPath -and (Test-Path -LiteralPath (Join-Path $projectRoot '.tmp/techtogs-utilities/catalog.lock.json'))) { $UtilitiesPath = Join-Path $projectRoot '.tmp/techtogs-utilities' }
-if (-not $UtilitiesPath) { $UtilitiesPath = Join-Path (Split-Path -Parent $projectRoot) 'techtogs-utilities' }
+if (-not $UtilitiesPath) {
+    if ($consumerManifest.libraryCommit -notmatch '^[a-f0-9]{40}$') { throw 'Pin utilities invalido.' }
+    $versionFolder = 'techtogs-utilities-' + $consumerManifest.libraryCommit.Substring(0, 12)
+    $UtilitiesPath = Join-Path (Split-Path -Parent $projectRoot) $versionFolder
+}
 if (-not (Test-Path -LiteralPath (Join-Path $UtilitiesPath 'catalog.lock.json'))) {
-    throw 'Clone techtogs-utilities ao lado deste projeto ou informe -UtilitiesPath / TECHTOGS_UTILITIES_PATH. Consulte SKILLS_SHARED.md.'
+    throw 'Clone a versao fixada de techtogs-utilities ao lado deste projeto ou informe -UtilitiesPath / TECHTOGS_UTILITIES_PATH. Consulte SKILLS_SHARED.md.'
 }
 $UtilitiesPath = (Resolve-Path -LiteralPath $UtilitiesPath).Path
 if ($consumerManifest.libraryCommit) {
