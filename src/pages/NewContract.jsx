@@ -5,7 +5,7 @@ import { Badge, Button, Card, Field, Input, Textarea } from '../components/ui/in
 import { useStore, getParty, saveContract, saveEvent } from '../lib/store.js'
 import { generateContractText } from '../lib/contractGenerator.js'
 import { reviewFieldsFor } from '../lib/contractReview.js'
-import { qualificacaoFromParty } from '../lib/party.js'
+import { qualificacaoFromParty, representanteFromParty } from '../lib/party.js'
 import { maskCurrency, parseCurrencyBR } from '../lib/format.js'
 
 export default function NewContract() {
@@ -14,10 +14,11 @@ export default function NewContract() {
   const party = useStore(() => getParty(id))
 
   const [classe, setClasse] = useState({ groupId: '', tipo: '', subtipo: '' })
+  // null usa o cadastro inicial; '' preserva a exclusão feita pelo usuário.
   const [f, setF] = useState({
     titulo: '',
-    qualificacao: '',
-    representante: '',
+    qualificacao: null,
+    representante: null,
     valor: '',
     vencimento: '',
     parcelas: '',
@@ -41,7 +42,7 @@ export default function NewContract() {
   const defaultQualificacao = useMemo(() => qualificacaoFromParty(party), [party])
 
   const defaultRepresentante = useMemo(
-    () => (party?.repLegal?.nome ? `${party.repLegal.nome}, ${party.repLegal.cargo}` : ''),
+    () => representanteFromParty(party),
     [party]
   )
 
@@ -55,8 +56,8 @@ export default function NewContract() {
       subtipo: classe.subtipo,
       titulo: f.titulo.trim() || `${classe.tipo}${classe.subtipo ? ' · ' + classe.subtipo : ''}`,
       parte: {
-        qualificacao: (f.qualificacao || defaultQualificacao).trim(),
-        representante: isPJ ? f.representante.trim() || defaultRepresentante : ''
+        qualificacao: (f.qualificacao ?? defaultQualificacao).trim(),
+        representante: isPJ ? (f.representante ?? defaultRepresentante).trim() : ''
       },
       valor: parseCurrencyBR(f.valor),
       vencimento: f.vencimento,
@@ -76,8 +77,8 @@ export default function NewContract() {
     e.preventDefault()
     setF((s) => ({
       ...s,
-      qualificacao: s.qualificacao.trim() || defaultQualificacao,
-      representante: isPJ ? s.representante.trim() || defaultRepresentante : s.representante
+      qualificacao: (s.qualificacao ?? defaultQualificacao).trim(),
+      representante: isPJ ? (s.representante ?? defaultRepresentante).trim() : ''
     }))
     setStage('dados')
     window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' })
@@ -187,18 +188,18 @@ export default function NewContract() {
 
           <Field label="Identificação e qualificação das partes" hint="Pré-preenchido pelo cadastro; ajuste se necessário.">
             <Textarea
-              value={f.qualificacao}
+              value={f.qualificacao ?? defaultQualificacao}
               onChange={(e) => set('qualificacao', e.target.value)}
-              placeholder={defaultQualificacao}
+              placeholder="Qualificação das partes"
             />
           </Field>
 
           {isPJ && (
             <Field label="Qualificação do representante legal">
               <Input
-                value={f.representante}
+                value={f.representante ?? defaultRepresentante}
                 onChange={(e) => set('representante', e.target.value)}
-                placeholder={defaultRepresentante || 'Nome, cargo, CPF'}
+                placeholder="Nome, cargo, CPF"
               />
             </Field>
           )}

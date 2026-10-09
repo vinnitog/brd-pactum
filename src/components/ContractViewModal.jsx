@@ -22,7 +22,7 @@ export default function ContractViewModal({ contract, onClose }) {
   const party = getParty(contract.partyId)
   const [view, setView] = useState('dados') // dados | texto
   const manage = canManage(user)
-  const text = contract.generatedText || generateContractText(contract, party)
+  const text = contract.generatedText ?? generateContractText(contract, party)
 
   return (
     <Modal title={contract.titulo || contract.tipo} onClose={onClose} maxWidth="max-w-2xl">

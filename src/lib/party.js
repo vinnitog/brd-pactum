@@ -18,3 +18,12 @@ export function qualificacaoFromParty(party) {
     .filter(Boolean)
     .join(', ')
 }
+
+export function representanteFromParty(party) {
+  if (party?.personType !== 'PJ') return ''
+  const { nome, cargo, cpf } = party.repLegal || {}
+  return [nome, cargo, cpf?.trim() ? `CPF ${cpf.trim()}` : '']
+    .map((parte) => (parte || '').trim())
+    .filter(Boolean)
+    .join(', ')
+}

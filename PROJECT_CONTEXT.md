@@ -1,6 +1,24 @@
 ﻿# PROJECT_CONTEXT.md - brd-pactum
 
-Gerado em: 2026-07-07 11:23:34
+Gerado em: 2026-07-07. Estado conferido em: 2026-10-09.
+
+## Estado Implementado
+
+React + Vite seguem adequados ao prototipo atual. Supabase continua planejado:
+AuthContext usa contas de demonstracao, store.js persiste em localStorage e as
+permissoes sao aplicadas apenas no frontend. Nao existe autenticacao real,
+backend, RLS nem persistencia entre dispositivos. Erros de armazenamento ainda
+nao sao apresentados ao usuario; contrato e eventos sao gravados separadamente.
+
+A elaboracao permite revisao de campos e texto antes de salvar. A minuta e uma
+string editavel, sem exportacao DOC/DOCX. Contratos salvos ainda nao possuem
+editor posterior, versoes ou aprovador. Parcelas representam apenas quantidade.
+Lembretes possuem geracao e historico locais; o envio por WhatsApp e manual.
+
+As caracteristicas e a stack abaixo registram a intencao original, nao comprovam
+integracoes. Decisoes vigentes: docs/agent-rules/domain-decisions.md. Prioridades
+reconciliadas: docs/RECOMENDACOES_E_ROADMAP.md. Skills e regras particulares:
+SKILLS_SHARED.md, .techtogs-utilities.json e docs/agent-rules/README.md.
 
 ## Descricao
 
@@ -8,7 +26,7 @@ Servicos e gerenciamento de contratos do escritorio BRD (clientes e fornecedores
 
 ## Objetivo
 
-Elaborar, gerenciar e acompanhar contratos, com agenda de vencimentos, lembretes automaticos e dashboard, com acesso diferenciado para advogados e clientes.
+Elaborar, gerenciar e acompanhar contratos, com agenda de vencimentos, geracao de lembretes e dashboard, com acesso diferenciado para advogados e clientes.
 
 ## Publico Alvo
 

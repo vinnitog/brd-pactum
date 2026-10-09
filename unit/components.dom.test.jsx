@@ -37,6 +37,8 @@ import ManageContractModal from '../src/components/ManageContractModal.jsx'
 import PartyFormModal from '../src/components/PartyFormModal.jsx'
 import AppRouter from '../src/components/AppRouter.jsx'
 import AppShell from '../src/components/AppShell.jsx'
+import ContractViewModal from '../src/components/ContractViewModal.jsx'
+import { fixtureContract, fixtureParty } from './fixtures/contracts.js'
 
 let state
 const lawyer = { name: 'Dra. Ana', role: 'advogado' }
@@ -294,6 +296,129 @@ describe('revisão de dados do contrato (Issue #4)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Confirmar e salvar' }))
     expect(storeMocks.saveContract).toHaveBeenCalledOnce()
     expect(storeMocks.saveContract.mock.calls[0][0].comunicacao).toBe('Somente por e-mail')
+  })
+})
+
+describe('integridade da revisão e minuta com cadastro sintético', () => {
+  function openReview(party = fixtureParty()) {
+    storeMocks.getParty.mockReturnValue(party)
+    render(
+      <MemoryRouter initialEntries={[`/novo/${party.id}`]}>
+        <Routes>
+          <Route path="/novo/:id" element={<NewContract />} />
+          <Route path="/parte/:id" element={<div>Contrato salvo</div>} />
+        </Routes>
+      </MemoryRouter>
+    )
+    fireEvent.change(screen.getByLabelText('Classificação'), { target: { value: 'civis' } })
+    fireEvent.change(screen.getByLabelText('Tipo'), { target: { value: 'Prestação de Serviços' } })
+    fireEvent.click(screen.getByRole('button', { name: /Revisar dados/ }))
+  }
+
+  it('leva CPF do representante PJ à revisão, minuta e contrato salvo', () => {
+    const party = fixtureParty()
+    openReview(party)
+    const representative = screen.getByLabelText('Qualificação do representante legal').value
+    expect(representative).toContain(party.repLegal.nome)
+    expect(representative).toContain(party.repLegal.cargo)
+    expect(representative).toContain(`CPF ${party.repLegal.cpf}`)
+
+    fireEvent.click(screen.getByRole('button', { name: /Gerar minuta/ }))
+    expect(screen.getByLabelText('Texto da minuta').value).toContain(representative)
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmar e salvar' }))
+    expect(storeMocks.saveContract.mock.calls[0][0].parte.representante).toBe(representative)
+  })
+
+  it('mantém dados apagados ao voltar à elaboração, gerar e salvar sem restaurar cadastro', () => {
+    const party = fixtureParty()
+    openReview(party)
+    fireEvent.change(screen.getByLabelText('Identificação e qualificação das partes'), { target: { value: '' } })
+    fireEvent.change(screen.getByLabelText('Qualificação do representante legal'), { target: { value: '' } })
+    fireEvent.click(screen.getByRole('button', { name: /Voltar à elaboração/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Revisar dados/ }))
+    expect(screen.getByLabelText('Identificação e qualificação das partes').value).toBe('')
+    expect(screen.getByLabelText('Qualificação do representante legal').value).toBe('')
+
+    fireEvent.click(screen.getByRole('button', { name: /Gerar minuta/ }))
+    const draft = screen.getByLabelText('Texto da minuta').value
+    expect(draft).not.toContain(party.name)
+    expect(draft).not.toContain(party.repLegal.nome)
+    fireEvent.click(screen.getByRole('button', { name: /Voltar aos dados/ }))
+    expect(screen.getByLabelText('Identificação e qualificação das partes').value).toBe('')
+    expect(screen.getByLabelText('Qualificação do representante legal').value).toBe('')
+    fireEvent.click(screen.getByRole('button', { name: /Gerar minuta/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmar e salvar' }))
+    expect(storeMocks.saveContract.mock.calls[0][0].parte).toEqual({ qualificacao: '', representante: '' })
+    expect(storeMocks.saveEvent).not.toHaveBeenCalled()
+  })
+
+  it('aplica data corrigida na revisão à minuta, contrato salvo e evento vinculado', () => {
+    openReview()
+    fireEvent.change(screen.getByLabelText('Data de vencimento'), { target: { value: '2028-02-29' } })
+    fireEvent.click(screen.getByRole('button', { name: /Gerar minuta/ }))
+    expect(screen.getByLabelText('Texto da minuta').value).toContain('29/02/2028')
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmar e salvar' }))
+    expect(storeMocks.saveContract.mock.calls[0][0].vencimento).toBe('2028-02-29')
+    expect(storeMocks.saveEvent).toHaveBeenCalledWith(expect.objectContaining({
+      contractId: 'saved-contract', partyId: 'fixture-pj', date: '2028-02-29', type: 'vencimento'
+    }))
+  })
+
+  it('oculta representante residual de uma PF na revisão e na minuta', () => {
+    const party = fixtureParty({ personType: 'PF' })
+    openReview(party)
+    expect(screen.queryByLabelText('Qualificação do representante legal')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: /Gerar minuta/ }))
+    expect(screen.getByLabelText('Texto da minuta').value).not.toContain(party.repLegal.nome)
+  })
+})
+
+describe('leitura de minuta já salva', () => {
+  it('mantém minuta explicitamente vazia ao reabrir o contrato', () => {
+    storeMocks.getParty.mockReturnValue(fixtureParty())
+    render(<ContractViewModal contract={fixtureContract({ id: 'saved', generatedText: '' })} onClose={vi.fn()} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Minuta gerada' }))
+    expect(screen.getByRole('textbox').value).toBe('')
+  })
+
+  it('gera a minuta de contrato legado somente quando não há texto salvo', () => {
+    storeMocks.getParty.mockReturnValue(fixtureParty())
+    render(<ContractViewModal contract={fixtureContract({ id: 'legacy' })} onClose={vi.fn()} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Minuta gerada' }))
+    expect(screen.getByRole('textbox').value).toContain('Serviço fictício para teste')
+  })
+})
+
+describe('integridade dos vínculos da agenda', () => {
+  const contracts = [
+    { id: 'contract-other', partyId: 'party-2', titulo: 'Contrato de outra parte' },
+    { id: 'contract-own', partyId: 'party-1', titulo: 'Contrato da própria parte' }
+  ]
+
+  it.each(['', undefined])('preserva evento sem contrato ao editar observação, vínculo original %s', (contractId) => {
+    render(<EventFormModal event={event({ contractId })} contracts={contracts} onClose={vi.fn()} />)
+    expect(screen.getByLabelText('Contrato').value).toBe('')
+    fireEvent.change(screen.getByLabelText('Observação'), { target: { value: 'Anotação revisada' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar' }))
+    expect(storeMocks.saveEvent).toHaveBeenCalledWith(expect.objectContaining({
+      partyId: 'party-1', contractId: '', note: 'Anotação revisada'
+    }))
+  })
+
+  it.each([true, false])('oferece apenas contratos da parte fixa, editando %s', (editing) => {
+    render(<EventFormModal partyId="party-1" event={editing ? event({ contractId: 'contract-own' }) : null} contracts={contracts} onClose={vi.fn()} />)
+    const select = screen.getByLabelText('Contrato')
+    expect(within(select).queryByRole('option', { name: 'Contrato de outra parte' })).toBeNull()
+    expect(within(select).getByRole('option', { name: 'Contrato da própria parte' })).toBeTruthy()
+  })
+
+  it('preserva o contrato da própria parte ao editar somente a data', () => {
+    render(<EventFormModal event={event({ contractId: 'contract-own' })} contracts={contracts} onClose={vi.fn()} />)
+    fireEvent.change(screen.getByLabelText('Data'), { target: { value: '2028-02-29' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar' }))
+    expect(storeMocks.saveEvent).toHaveBeenCalledWith(expect.objectContaining({
+      partyId: 'party-1', contractId: 'contract-own', date: '2028-02-29'
+    }))
   })
 })
 

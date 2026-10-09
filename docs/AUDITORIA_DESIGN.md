@@ -1,5 +1,45 @@
 # Auditoria de design — BRD Pactum
 
+## Retomada de integridade — 09/10/2026
+
+Confrontados os achados históricos com tickets aprovados e código atual. As
+correções de layout da agenda e a identidade visual anteriores permanecem
+presentes; este lote não redesenha a interface nem altera taxonomia/dashboard.
+
+Aplicados Impeccable, ui-ux-expert e accessibility-compliance à revisão pontual:
+
+- Qualificação e representante agora aparecem como valores pré-preenchidos
+  editáveis, incluindo CPF do representante PJ. Campos apagados permanecem vazios
+  entre etapas; placeholders neutros evitam simular conteúdo após a exclusão.
+- A minuta conserva o vencimento informado em data civil brasileira. Uma minuta
+  salva explicitamente vazia não é recriada ao reabrir.
+- Ao editar a agenda, um evento sem contrato continua sem vínculo. O seletor
+  mostra somente contratos da parte do evento, preservando controle e rótulo nativos.
+- Rótulos acessíveis, componentes, estilos e ordem dos controles foram preservados.
+
+Validação do candidato: 113 testes aprovados (`test.cmd`: 48 Node + 65 DOM),
+incluindo 19 regressões novas com fixtures sintéticas. Doze falhas foram reproduzidas
+antes das correções; os casos de minuta salva vazia e persistência foram adicionados
+depois, sem alegação de reprodução anterior. O teste com store real e localStorage
+simulado comprova salvamento/recarga local de valores, data, parcelas e vínculos.
+Build Vite e `git diff --check` aprovados. Detector Impeccable nos três componentes
+alterados: `[]`. Vitest ficou restrito a `unit/**/*.dom.test.jsx` para não executar
+testes duplicados de clones temporários usados na validação da migração.
+
+Revisões por subagents ocorreram em sequência UI/UX e code-reviewer; qa-senior e
+qa-automate definiram e executaram os casos. Não restaram bloqueios nesse escopo.
+Skills desta retomada foram lidas da biblioteca fixada, diferentemente da sessão
+histórica abaixo. Evidência de migração em
+[migration-validation.md](agent-rules/migration-validation.md).
+
+Limites: nenhuma inspeção visual em navegador, medição de geometria ou teste com
+leitor de tela nesta retomada; não se declara conformidade WCAG. Autenticação,
+permissões e persistência seguem demonstrativas/localStorage. A minuta é textual,
+sem exportação Word ou homologação jurídica. Histórico de julho/setembro abaixo
+permanece como evidência da sua própria versão, não como contagem atual de testes.
+
+## Auditoria visual histórica
+
 Referência: [Impeccable](https://github.com/pbakaus/impeccable), aplicada em modo de operação: clareza, legibilidade e consistência para gestão de contratos. Identidade preservada e conferida no BRD Assistant: DM Sans, violeta `#964AFB`, fundo `#0B0911` e superfícies com subtom violeta.
 
 ## Método e limites

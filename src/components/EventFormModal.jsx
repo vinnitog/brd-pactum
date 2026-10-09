@@ -18,22 +18,28 @@ export const EVENT_TYPES = [
 
 export default function EventFormModal({ partyId, parties = [], contracts = [], event = null, onClose }) {
   const editing = Boolean(event?.id)
-  const [form, setForm] = useState(() => ({
-    partyId: event?.partyId || partyId || parties[0]?.id || '',
-    contractId: event?.contractId || contracts[0]?.id || '',
-    type: event?.type || 'vencimento',
-    date: event?.date || todayLocalISO(),
-    urgency: event?.urgency || 'media',
-    note: event?.note || ''
-  }))
+  const [form, setForm] = useState(() => {
+    const initialPartyId = event?.partyId || partyId || parties[0]?.id || ''
+    const initialContractId = editing
+      ? event.contractId || ''
+      : contracts.find((c) => c.partyId === initialPartyId)?.id || ''
+    return {
+      partyId: initialPartyId,
+      contractId: initialContractId,
+      type: event?.type || 'vencimento',
+      date: event?.date || todayLocalISO(),
+      urgency: event?.urgency || 'media',
+      note: event?.note || ''
+    }
+  })
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }))
 
   // Aberto pela agenda (sem parte fixa e sem estar editando): o usuário escolhe a
   // parte e vê apenas os contratos dela. Ao editar, a parte do evento é mantida.
   const showPartyPicker = !editing && !partyId && parties.length > 0
   const partyContracts = useMemo(
-    () => (showPartyPicker ? contracts.filter((c) => c.partyId === form.partyId) : contracts),
-    [showPartyPicker, contracts, form.partyId]
+    () => contracts.filter((c) => c.partyId === form.partyId),
+    [contracts, form.partyId]
   )
 
   function submit(e) {

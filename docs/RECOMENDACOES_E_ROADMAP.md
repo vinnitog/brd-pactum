@@ -3,7 +3,79 @@
 Documento de apoio para apresentação aos sócios e planejamento das próximas
 etapas do BRD Pactum.
 
-Atualizado em: 14 de julho de 2026.
+Histórico original: 14 de julho de 2026. Reconciliado em: 9 de outubro de 2026.
+
+## Situação vigente em 09/10/2026
+
+Esta seção prevalece sobre as recomendações históricas abaixo. A conferência
+usou código, testes e decisões dos tickets; não pressupõe que uma pendência
+de julho continua aberta. Regras aprovadas estão em
+[domain-decisions.md](agent-rules/domain-decisions.md).
+
+| Tema histórico | Evidência posterior | Situação atual |
+| --- | --- | --- |
+| Relógio fixo e próximos vencimentos | [PR6](https://github.com/vinnitog/brd-pactum/pull/6), `deadlines.js` e testes de datas civis | Resolvido; seed antigo não equivale a relógio fixo. |
+| Conferência de dados antes da minuta | [#4](https://github.com/vinnitog/brd-pactum/issues/4), [PR16](https://github.com/vinnitog/brd-pactum/pull/16) | Implementada; comunicação travada e demais campos previstos editáveis. Não confundir com aprovação ou histórico posterior. |
+| Taxonomia não implementada | [#5](https://github.com/vinnitog/brd-pactum/issues/5), `contractTypes.js` | 11 grupos estáticos aprovados. Homologação de modelos jurídicos é outra entrega. |
+| Perfis de acesso | [PR20](https://github.com/vinnitog/brd-pactum/pull/20) | Matriz visual implementada; cliente próprio, estagiário leitura e gestores. Sem proteção no servidor. |
+| Dashboard, filtros e faixas | [#9](https://github.com/vinnitog/brd-pactum/issues/9), [PR22](https://github.com/vinnitog/brd-pactum/pull/22) | Implementados agrupamento por tipo, filtros combináveis e estado vazio. Assinatura/retroatividade não modeladas. |
+| Agenda e edição | [PR23](https://github.com/vinnitog/brd-pactum/pull/23) | Calendário/lista, filtros, criação/edição, tipos e confirmação de exclusão implementados. |
+| Gerenciamento manual | [PR25](https://github.com/vinnitog/brd-pactum/pull/25) | Qualificação reaproveitada, testemunha, vários vencimentos e urgência manual implementados. |
+| Lembretes | [PR28](https://github.com/vinnitog/brd-pactum/pull/28) | Texto editável, lote de dois dias, histórico local e WhatsApp manual implementados. Não há envio automático por provedor. |
+| Cadastro de partes | [PR30](https://github.com/vinnitog/brd-pactum/pull/30) | Busca nos dois tipos e campos opcionais. Cliente e fornecedor continuam cadastros separados; múltiplas partes por contrato não implementadas. |
+| Design e cartões quebrados na agenda | [PR17](https://github.com/vinnitog/brd-pactum/pull/17), `AUDITORIA_DESIGN.md` | Correções anteriores presentes; evidência histórica não é nova homologação visual. |
+| Pages e automação | PR31/32 e workflows atuais | Publicação e substituição da automação antiga concluídas. Codex em desenvolvimento/revisão/integração; Gemini somente na triagem responsável. |
+
+### Prioridades remanescentes
+
+1. **P0, antes de produção:** autenticação, persistência e autorização real.
+   `AuthContext` e `store.js` continuam usando contas demo/localStorage. Não há
+   backend, Supabase client ou RLS. Definir ambiente e migração antes da implantação.
+2. **P1, primeiro lote implementado nesta retomada:** conservar vencimento e CPF
+   do representante na minuta; respeitar campos explicitamente apagados e texto
+   salvo vazio; editar agenda sem atribuir contrato ausente ou de outra parte.
+   Fixtures cobrem geração, revisão, navegação entre etapas, salvamento e reabertura.
+3. **P1, próximo lote técnico:** tratar falha de armazenamento e gravação conjunta
+   de contrato/eventos. Hoje são commits locais separados e falhas de localStorage
+   não são comunicadas. Não foi alterado neste lote.
+4. **P1, decisão de produto:** papéis de múltiplas partes, editor de contrato salvo,
+   versões, histórico, estados e aprovador. Hoje há revisão anterior à geração e
+   alteração ativo/inativo, sem ciclo de aprovação posterior.
+5. **P1, decisão financeira:** parcelas são apenas quantidade; faltam datas,
+   valores, arredondamento, quitação e cancelamento. Não gerar cobranças ou inferir
+   periodicidade a partir desse número.
+6. **P2, [#13 aberta](https://github.com/vinnitog/brd-pactum/issues/13):** definir
+   modelos homologados, formato/download Word, relação com histórico e opções de
+   pagamento múltiplo. Atualmente a minuta é texto; nenhum DOC/DOCX é gerado.
+7. **P2:** resolver limites conflitantes de urgência, assinatura/retroatividade e
+   filtro por tipo homônimo entre grupos antes de alterar classificação/dashboard.
+
+**Pendência técnica adicional identificada no clone limpo:** `npm audit` reportou
+19 vulnerabilidades no lockfile existente (7 moderadas, 10 altas, 2 críticas).
+As críticas estão em dependências de desenvolvimento (`vitest` e `tinypool`);
+`react-router-dom`/`react-router` possuem avisos moderados em runtime. Priorizar
+um lote próprio de atualização e regressão de dependências, antes de ampliar uso
+ou exposição do ambiente. Não foi aplicado `npm audit fix` nem alterado o lockfile.
+
+Campos continuam opcionais conforme #13/#14, preservando a testemunha exigida
+no gerenciamento (#11). As recomendações antigas de tornar CPF/CNPJ ou dados
+obrigatórios não autorizam validação impeditiva. PR33 entrega anexos privados à
+automação; não representa exportação Word no aplicativo.
+
+### Evidência e limites do lote
+
+Fixtures são sintéticas. Os testes de DOM exercitam geração/revisão e agenda;
+um teste separado utiliza o store real, salva em localStorage simulado e recarrega
+o módulo. `test.cmd` aprovou 113 testes (48 Node + 65 DOM), incluindo 19 novos;
+build Vite e revisão UI/UX/técnica aprovados. Isso não valida segurança,
+persistência entre dispositivos, navegador
+real, valor jurídico da minuta ou operação com dados reais. Migração de skills:
+[evidência do clone limpo](agent-rules/migration-validation.md).
+
+## Histórico de planejamento de julho
+
+O conteúdo seguinte fica preservado como origem das recomendações. Consulte a
+situação vigente acima antes de tratar seus itens como trabalho autorizado.
 
 ## 1. Objetivo
 
