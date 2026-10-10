@@ -1,7 +1,20 @@
 # Decisões de domínio vigentes
 
-Conferidas em 09/10/2026 contra tickets, código e testes. Estas regras locais
+Conferidas em 09/10/2026 contra tickets, código e testes; decisão de acesso
+atualizada em 10/10/2026 por instrução expressa do usuário. Estas regras locais
 prevalecem sobre recomendações históricas ainda não reconciliadas.
+
+## Acesso e persistência: decisão vigente em 10/10/2026
+
+- Manter as contas de demonstração e o armazenamento em `localStorage` enquanto
+  o usuário define quem terá acesso e como esse acesso funcionará. Essa é uma
+  decisão de escopo, não uma pendência autorizada para implementação automática.
+- Não substituir esse fluxo por autenticação real, Supabase, backend ou RLS;
+  não criar contas, migrar dados ou ativar serviços. Uma mudança dessa natureza
+  exige nova definição de acesso e autorização explícita do usuário.
+- A matriz no frontend continua sendo demonstração de perfis; não representa
+  proteção no servidor, isolamento entre dispositivos ou aprovação de uso real.
+  Os limites do armazenamento local e os fluxos demo atuais devem ser preservados.
 
 - [#4](https://github.com/vinnitog/brd-pactum/issues/4): revisão dos dados ocorre
   antes da minuta. Comunicação permanece travada; os demais campos previstos
@@ -33,6 +46,7 @@ prevalecem sobre recomendações históricas ainda não reconciliadas.
 - Parcelas: datas, valores, arredondamento, periodicidade, quitação e cancelamento.
 - Word: modelos homologados, formato, download e relação com o histórico.
 - Pagamento múltiplo: opções e representação. Não inferir um cronograma financeiro.
-- Produção: ambiente de autenticação/banco, migração dos dados locais e regras RLS.
+- Acesso futuro: quem terá acesso e como; depois dessa decisão, avaliar ambiente,
+  persistência e permissões. A migração do fluxo demo está adiada, conforme acima.
 
 Nenhuma dessas lacunas autoriza inventar regras ou operar com dados reais.

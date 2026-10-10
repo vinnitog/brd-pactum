@@ -7,6 +7,12 @@ Histórico original: 14 de julho de 2026. Reconciliado em: 10 de outubro de 2026
 
 ## Atualização técnica em 10/10/2026
 
+**Decisão de acesso em 10/10/2026:** o usuário determinou manter contas demo e
+localStorage até definir quem terá acesso e como esse acesso funcionará.
+Autenticação real, Supabase, backend, RLS e migração não estão autorizados neste
+lote. A decisão prevalece sobre a prioridade de produção do histórico abaixo;
+retomá-la exige definição de acesso e autorização explícita.
+
 O lote de integridade local está implementado: contrato e seus novos eventos
 usam uma gravação conjunta; memória e navegação só confirmam salvamento após
 `localStorage.setItem` funcionar. Falhas conservam rascunhos e bytes existentes,
@@ -19,6 +25,14 @@ O audit confirmou os mesmos 19 avisos do lockfile. As atualizações completas
 exigem mudanças maiores de tooling e permanecem em lote separado. Evidências,
 decisões e limites estão em [qa-storage-integrity-20261010.md](qa-storage-integrity-20261010.md).
 Autenticação demo e decisões de produto continuam com os limites já descritos.
+
+O lote separado de dependências também foi implementado em 10/10/2026:
+React Router 7.18.4, Vite 7.3.7/plugin React 5.2.0, Vitest 4.1.11 e PostCSS
+8.5.29, mais transitivas atualizadas dentro das faixas compatíveis. Os 145 testes
+e builds normal/Pages passaram após `npm ci`. Audit atual: 7 avisos somente dev
+(5 altos e 2 moderados), zero críticos e zero de produção. React 18, Tailwind 3,
+fontes da UI, modelo de dados, demo e localStorage permanecem preservados.
+Detalhes e custo de bundle/build: [qa-dependencies-20261010.md](qa-dependencies-20261010.md).
 
 ## Situação vigente em 09/10/2026
 
@@ -43,9 +57,10 @@ de julho continua aberta. Regras aprovadas estão em
 
 ### Prioridades remanescentes
 
-1. **P0, antes de produção:** autenticação, persistência e autorização real.
-   `AuthContext` e `store.js` continuam usando contas demo/localStorage. Não há
-   backend, Supabase client ou RLS. Definir ambiente e migração antes da implantação.
+1. **Adiado por decisão expressa de acesso em 10/10/2026:** manter contas demo e
+   localStorage. Definir quem terá acesso e como antes de avaliar autenticação,
+   banco e autorização no servidor. Não implementar backend, Supabase ou RLS
+   automaticamente a partir das recomendações históricas.
 2. **P1, primeiro lote implementado nesta retomada:** conservar vencimento e CPF
    do representante na minuta; respeitar campos explicitamente apagados e texto
    salvo vazio; editar agenda sem atribuir contrato ausente ou de outra parte.
@@ -67,12 +82,13 @@ de julho continua aberta. Regras aprovadas estão em
 7. **P2:** resolver limites conflitantes de urgência, assinatura/retroatividade e
    filtro por tipo homônimo entre grupos antes de alterar classificação/dashboard.
 
-**Pendência técnica adicional identificada no clone limpo:** `npm audit` reportou
-19 vulnerabilidades no lockfile existente (7 moderadas, 10 altas, 2 críticas).
-As críticas estão em dependências de desenvolvimento (`vitest` e `tinypool`);
-`react-router-dom`/`react-router` possuem avisos moderados em runtime. Priorizar
-um lote próprio de atualização e regressão de dependências, antes de ampliar uso
-ou exposição do ambiente. Não foi aplicado `npm audit fix` nem alterado o lockfile.
+**Dependências reconciliadas em 10/10/2026:** o baseline tinha 19 avisos
+(7 moderados, 10 altos, 2 críticos). O lote dedicado removeu as críticas de
+Vitest/Tinypool e os avisos de runtime Router; permanecem 7 avisos dev na cadeia
+Tailwind 3. Braces 3.0.3 não tem correção publicada; selector-parser corrigido
+exige uma major fora da faixa declarada pelo Tailwind 3. Não esconder os avisos
+nem forçar overrides. Acompanhar correções upstream; migração de Tailwind exige
+lote próprio com aprovação visual/regressão. Nenhum `npm audit fix` foi utilizado.
 
 Campos continuam opcionais conforme #13/#14, preservando a testemunha exigida
 no gerenciamento (#11). As recomendações antigas de tornar CPF/CNPJ ou dados

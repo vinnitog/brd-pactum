@@ -4,7 +4,8 @@ Gerado em: 2026-07-07. Estado conferido em: 2026-10-10.
 
 ## Estado Implementado
 
-React + Vite seguem adequados ao prototipo atual. Supabase continua planejado:
+React + Vite seguem adequados ao prototipo atual. Supabase pertence a intencao
+inicial e permanece fora do escopo vigente:
 AuthContext usa contas de demonstracao, store.js persiste em localStorage e as
 permissoes sao aplicadas apenas no frontend. Nao existe autenticacao real,
 backend, RLS nem persistencia entre dispositivos. Contrato e seus novos eventos
@@ -13,6 +14,20 @@ leitura/escrita e conteudo invalido sao apresentados sem sobrescrever dados ou
 fechar formularios; dados de outra aba precisam ser relidos antes de salvar.
 Essa conferencia nao fornece bloqueio entre abas. Evidencia e limites:
 docs/qa-storage-integrity-20261010.md.
+
+Decisao expressa do usuario em 10/10/2026: manter contas demo e localStorage
+enquanto define quem tera acesso e como esse acesso funcionara. Nao implementar
+autenticacao real, Supabase, backend, RLS ou migracao de dados sem nova definicao
+e autorizacao. As referencias historicas de producao abaixo nao substituem essa
+decisao. Regras vigentes: docs/agent-rules/domain-decisions.md.
+
+Lote de dependencias em 10/10/2026: React Router 7.18.4, Vite 7.3.7, plugin React
+5.2.0, Vitest 4.1.11 e PostCSS 8.5.29, mantendo React 18 e Tailwind 3. Audit
+reduzido de 19 para 7 avisos de desenvolvimento, zero criticas e zero avisos de
+producao. Os 7 restantes pertencem a cadeia Tailwind 3 e nao foram ocultados por
+overrides. npm ci, 145 testes e builds normal/Pages aprovados; alvo de compilacao
+anterior preservado e Node minimo explicitado. Evidencias, custos e limites:
+docs/qa-dependencies-20261010.md.
 
 A elaboracao permite revisao de campos e texto antes de salvar. A minuta e uma
 string editavel, sem exportacao DOC/DOCX. Contratos salvos ainda nao possuem
