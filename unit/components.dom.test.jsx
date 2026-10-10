@@ -11,7 +11,10 @@ const storeMocks = vi.hoisted(() => ({
   getContract: vi.fn(() => null),
   getParty: vi.fn(() => null),
   listReminders: vi.fn(() => []),
-  saveContract: vi.fn(),
+  saveContractWithEvents: vi.fn(),
+  getStorageIssue: vi.fn(() => null),
+  useStorageIssue: vi.fn(() => null),
+  retryStorage: vi.fn(),
   saveEvent: vi.fn(),
   saveParty: vi.fn(),
   toggleEventDone: vi.fn(),
@@ -162,8 +165,12 @@ beforeEach(() => {
   storeMocks.useStore.mockImplementation((selector) => selector(state))
   storeMocks.getParty.mockImplementation((id) => state.parties.find((party) => party.id === id) || null)
   storeMocks.getContract.mockImplementation((id) => state.contracts.find((contract) => contract.id === id) || null)
-  storeMocks.saveContract.mockImplementation((contract) => ({ ...contract, id: 'saved-contract' }))
+  storeMocks.saveContractWithEvents.mockImplementation((contract) => ({ ...contract, id: 'saved-contract' }))
   storeMocks.saveParty.mockImplementation((party) => ({ ...party, id: 'saved-party' }))
+  storeMocks.saveEvent.mockImplementation((event) => ({ ...event, id: event.id || 'saved-event' }))
+  storeMocks.addReminder.mockImplementation((reminder) => ({ ...reminder, id: 'saved-reminder' }))
+  storeMocks.getStorageIssue.mockReturnValue(null)
+  storeMocks.useStorageIssue.mockReturnValue(null)
   authMocks.useAuth.mockReturnValue({ user: lawyer })
   vi.useFakeTimers({ toFake: ['Date'] })
   vi.setSystemTime(new Date(2028, 1, 15, 12))
@@ -294,8 +301,8 @@ describe('revisão de dados do contrato (Issue #4)', () => {
     expect(minuta.value).toContain('R$ 2.000,00')
 
     fireEvent.click(screen.getByRole('button', { name: 'Confirmar e salvar' }))
-    expect(storeMocks.saveContract).toHaveBeenCalledOnce()
-    expect(storeMocks.saveContract.mock.calls[0][0].comunicacao).toBe('Somente por e-mail')
+    expect(storeMocks.saveContractWithEvents).toHaveBeenCalledOnce()
+    expect(storeMocks.saveContractWithEvents.mock.calls[0][0].comunicacao).toBe('Somente por e-mail')
   })
 })
 
@@ -326,7 +333,7 @@ describe('integridade da revisão e minuta com cadastro sintético', () => {
     fireEvent.click(screen.getByRole('button', { name: /Gerar minuta/ }))
     expect(screen.getByLabelText('Texto da minuta').value).toContain(representative)
     fireEvent.click(screen.getByRole('button', { name: 'Confirmar e salvar' }))
-    expect(storeMocks.saveContract.mock.calls[0][0].parte.representante).toBe(representative)
+    expect(storeMocks.saveContractWithEvents.mock.calls[0][0].parte.representante).toBe(representative)
   })
 
   it('mantém dados apagados ao voltar à elaboração, gerar e salvar sem restaurar cadastro', () => {
@@ -348,7 +355,7 @@ describe('integridade da revisão e minuta com cadastro sintético', () => {
     expect(screen.getByLabelText('Qualificação do representante legal').value).toBe('')
     fireEvent.click(screen.getByRole('button', { name: /Gerar minuta/ }))
     fireEvent.click(screen.getByRole('button', { name: 'Confirmar e salvar' }))
-    expect(storeMocks.saveContract.mock.calls[0][0].parte).toEqual({ qualificacao: '', representante: '' })
+    expect(storeMocks.saveContractWithEvents.mock.calls[0][0].parte).toEqual({ qualificacao: '', representante: '' })
     expect(storeMocks.saveEvent).not.toHaveBeenCalled()
   })
 
@@ -358,10 +365,10 @@ describe('integridade da revisão e minuta com cadastro sintético', () => {
     fireEvent.click(screen.getByRole('button', { name: /Gerar minuta/ }))
     expect(screen.getByLabelText('Texto da minuta').value).toContain('29/02/2028')
     fireEvent.click(screen.getByRole('button', { name: 'Confirmar e salvar' }))
-    expect(storeMocks.saveContract.mock.calls[0][0].vencimento).toBe('2028-02-29')
-    expect(storeMocks.saveEvent).toHaveBeenCalledWith(expect.objectContaining({
-      contractId: 'saved-contract', partyId: 'fixture-pj', date: '2028-02-29', type: 'vencimento'
-    }))
+    expect(storeMocks.saveContractWithEvents.mock.calls[0][0].vencimento).toBe('2028-02-29')
+    expect(storeMocks.saveContractWithEvents.mock.calls[0][1]).toEqual([
+      expect.objectContaining({ partyId: 'fixture-pj', date: '2028-02-29', type: 'vencimento' })
+    ])
   })
 
   it('oculta representante residual de uma PF na revisão e na minuta', () => {
@@ -913,21 +920,23 @@ describe('elaboração e revisão de contrato', () => {
     fireEvent.click(generate)
 
     expect(screen.getByRole('heading', { name: 'Revisão dos dados' })).toBeTruthy()
-    expect(storeMocks.saveContract).not.toHaveBeenCalled()
+    expect(storeMocks.saveContractWithEvents).not.toHaveBeenCalled()
     fireEvent.click(screen.getByRole('button', { name: 'Gerar minuta →' }))
     const draft = screen.getByRole('textbox', { name: 'Texto da minuta' })
     expect(draft.value).toContain('Aquisição de equipamento')
     expect(draft.value).toContain('Ana Cliente')
     expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'instant' })
-    expect(storeMocks.saveContract).not.toHaveBeenCalled()
+    expect(storeMocks.saveContractWithEvents).not.toHaveBeenCalled()
     expect(storeMocks.saveEvent).not.toHaveBeenCalled()
     fireEvent.change(draft, { target: { value: 'Minuta revisada pelo advogado' } })
     fireEvent.click(screen.getByRole('button', { name: 'Confirmar e salvar' }))
 
-    expect(storeMocks.saveContract).toHaveBeenCalledOnce()
-    expect(storeMocks.saveContract).toHaveBeenCalledWith(expect.objectContaining({ partyId: 'party-1', tipo: 'Compra e Venda', generatedText: 'Minuta revisada pelo advogado' }))
-    expect(storeMocks.saveEvent).toHaveBeenCalledOnce()
-    expect(storeMocks.saveEvent).toHaveBeenCalledWith(expect.objectContaining({ contractId: 'saved-contract', partyId: 'party-1', date: '2028-03-10' }))
+    expect(storeMocks.saveContractWithEvents).toHaveBeenCalledOnce()
+    expect(storeMocks.saveContractWithEvents).toHaveBeenCalledWith(
+      expect.objectContaining({ partyId: 'party-1', tipo: 'Compra e Venda', generatedText: 'Minuta revisada pelo advogado' }),
+      [expect.objectContaining({ partyId: 'party-1', date: '2028-03-10' })]
+    )
+    expect(storeMocks.saveEvent).not.toHaveBeenCalled()
     expect(screen.getByRole('heading', { name: 'Detalhes da parte' })).toBeTruthy()
   })
 })
@@ -1009,7 +1018,7 @@ describe('cadastro de gerenciamento (Issue #11)', () => {
     render(<MemoryRouter><ManageContractModal partyId="party-1" onClose={() => {}} /></MemoryRouter>)
     fireEvent.click(screen.getByRole('button', { name: 'Salvar cadastro' }))
     expect(screen.getByRole('alert').textContent).toMatch(/testemunha/i)
-    expect(storeMocks.saveContract).not.toHaveBeenCalled()
+    expect(storeMocks.saveContractWithEvents).not.toHaveBeenCalled()
   })
 
   it('salva o cadastro e agenda o vencimento quando há testemunha', () => {
@@ -1018,16 +1027,14 @@ describe('cadastro de gerenciamento (Issue #11)', () => {
     fireEvent.change(screen.getAllByPlaceholderText('Nome')[0], { target: { value: 'Testemunha Um' } })
     fireEvent.click(screen.getByRole('button', { name: 'Salvar cadastro' }))
 
-    expect(storeMocks.saveContract).toHaveBeenCalledOnce()
-    expect(storeMocks.saveContract).toHaveBeenCalledWith(
+    expect(storeMocks.saveContractWithEvents).toHaveBeenCalledOnce()
+    expect(storeMocks.saveContractWithEvents).toHaveBeenCalledWith(
       expect.objectContaining({
         partyId: 'party-1',
         source: 'manual',
         testemunhas: [expect.objectContaining({ nome: 'Testemunha Um' })]
-      })
-    )
-    expect(storeMocks.saveEvent).toHaveBeenCalledWith(
-      expect.objectContaining({ contractId: 'saved-contract', partyId: 'party-1', type: 'vencimento' })
+      }),
+      [expect.objectContaining({ type: 'vencimento' })]
     )
     expect(onClose).toHaveBeenCalledOnce()
   })

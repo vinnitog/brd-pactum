@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import Modal from './Modal.jsx'
+import { StorageRecovery } from './StorageNotice.jsx'
 import { Button, Field, Input, Textarea } from './ui/index.jsx'
 import ClassificationPicker from './ClassificationPicker.jsx'
-import { saveContract, saveEvent, getParty } from '../lib/store.js'
+import { saveContractWithEvents, getParty, getStorageIssue } from '../lib/store.js'
 import { qualificacaoFromParty } from '../lib/party.js'
 import { maskCurrency, parseCurrencyBR, todayLocalISO } from '../lib/format.js'
 
@@ -42,7 +43,7 @@ export default function ManageContractModal({ partyId, onClose }) {
       return
     }
     setError('')
-    const contract = saveContract({
+    const contract = saveContractWithEvents({
       partyId,
       source: 'manual',
       status: 'ativo',
@@ -53,12 +54,11 @@ export default function ManageContractModal({ partyId, onClose }) {
       valor: parseCurrencyBR(valor),
       parte: { qualificacao: qualificacao.trim() },
       testemunhas: testemunhasValidas
-    })
-    vencimentos
-      .filter((v) => v.date)
-      .forEach((v) =>
-        saveEvent({ contractId: contract.id, partyId, type: v.type, date: v.date, urgency: v.urgency, note: v.note })
-      )
+    }, vencimentos.filter((v) => v.date))
+    if (!contract) {
+      setError(getStorageIssue()?.message || 'Não foi possível salvar o contrato. Confira os dados e tente novamente.')
+      return
+    }
     onClose()
   }
 
@@ -163,7 +163,12 @@ export default function ManageContractModal({ partyId, onClose }) {
           </div>
         </div>
 
-        {error && <p className="text-sm text-red-400" role="alert">{error}</p>}
+        {error && (
+          <div>
+            <p className="text-sm text-red-300" role="alert">{error}</p>
+            <StorageRecovery onRecovered={() => setError('')} />
+          </div>
+        )}
 
         <div className="flex justify-end gap-3 pt-1">
           <Button type="button" variant="ghost" onClick={onClose}>

@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Modal from './Modal.jsx'
+import { StorageRecovery } from './StorageNotice.jsx'
 import { Button, Field, Input, Select } from './ui/index.jsx'
-import { saveParty } from '../lib/store.js'
+import { saveParty, getStorageIssue } from '../lib/store.js'
 import { maskCPF, maskCNPJ, maskRG } from '../lib/format.js'
 
 // Cadastro de cliente/fornecedor. Para PJ, abre a qualificação do representante
@@ -42,6 +43,10 @@ export default function PartyFormModal({ kind, party = null, onClose }) {
       address: form.address.trim(),
       repLegal: isPJ ? { nome: form.repNome.trim(), cpf: form.repCpf.trim(), cargo: form.repCargo.trim() } : null
     })
+    if (!saved) {
+      setError(getStorageIssue()?.message || 'Não foi possível salvar o cadastro. Tente novamente.')
+      return
+    }
     onClose()
     if (!party) navigate(`/parte/${saved.id}`)
   }
@@ -116,7 +121,12 @@ export default function PartyFormModal({ kind, party = null, onClose }) {
           </div>
         )}
 
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && (
+          <div>
+            <p className="text-sm text-red-300" role="alert">{error}</p>
+            <StorageRecovery onRecovered={() => setError('')} />
+          </div>
+        )}
 
         <div className="flex justify-end gap-3 pt-2">
           <Button type="button" variant="ghost" onClick={onClose}>

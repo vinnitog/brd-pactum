@@ -2,6 +2,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext.jsx'
 import { isEquipeBRD, roleLabel } from '../lib/permissions.js'
 import Logo from './Logo.jsx'
+import StorageNotice from './StorageNotice.jsx'
 
 function NavItem({ to, children, end }) {
   return (
@@ -86,7 +87,10 @@ export default function AppShell({ children }) {
           {isEquipeBRD(user) && <NavItem to="/dashboard">Dashboard</NavItem>}
         </nav>
       </header>
-      <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-6xl scroll-mt-40 px-4 py-8 sm:py-10">{children}</main>
+      <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-6xl scroll-mt-40 px-4 py-8 sm:py-10">
+        <StorageNotice />
+        {children}
+      </main>
     </div>
   )
 }

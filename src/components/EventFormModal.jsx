@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import Modal from './Modal.jsx'
+import { StorageRecovery } from './StorageNotice.jsx'
 import { Button, Field, Input, Select } from './ui/index.jsx'
-import { saveEvent } from '../lib/store.js'
+import { saveEvent, getStorageIssue } from '../lib/store.js'
 import { todayLocalISO } from '../lib/format.js'
 
 // Datas relevantes acompanhadas na agenda. Decisão dos sócios (Issue #10): além
@@ -18,6 +19,7 @@ export const EVENT_TYPES = [
 
 export default function EventFormModal({ partyId, parties = [], contracts = [], event = null, onClose }) {
   const editing = Boolean(event?.id)
+  const [saveError, setSaveError] = useState('')
   const [form, setForm] = useState(() => {
     const initialPartyId = event?.partyId || partyId || parties[0]?.id || ''
     const initialContractId = editing
@@ -47,13 +49,23 @@ export default function EventFormModal({ partyId, parties = [], contracts = [], 
     if (!form.partyId) return
     // Ao trocar de parte, o contrato antes selecionado pode não pertencer a ela.
     const contractId = partyContracts.some((c) => c.id === form.contractId) ? form.contractId : ''
-    saveEvent({ ...(editing ? { id: event.id } : {}), ...form, contractId })
+    const saved = saveEvent({ ...(editing ? { id: event.id } : {}), ...form, contractId })
+    if (!saved) {
+      setSaveError(getStorageIssue()?.message || 'Não foi possível salvar o vencimento. Tente novamente.')
+      return
+    }
     onClose()
   }
 
   return (
     <Modal title={editing ? 'Editar vencimento na agenda' : 'Novo vencimento na agenda'} onClose={onClose}>
       <form onSubmit={submit} className="space-y-4">
+        {saveError && (
+          <div>
+            <p className="text-sm text-red-300" role="alert">{saveError}</p>
+            <StorageRecovery onRecovered={() => setSaveError('')} />
+          </div>
+        )}
         {showPartyPicker && (
           <Field label="Cliente / fornecedor">
             <Select
