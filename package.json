@@ -11,7 +11,8 @@
     "build": "vite build",
     "build:pages": "vite build --mode github-pages",
     "preview": "vite preview",
-    "test": "node --test unit/*.test.js unit/*.test.cjs && vitest run"
+    "test": "node --test unit/*.test.js unit/*.test.cjs && vitest run",
+    "test:e2e": "node scripts/qa-store-browser.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

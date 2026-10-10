@@ -36,3 +36,24 @@ Não foi implementado backend/RLS/auth real, cobrança ou envio automático.
 Os7 avisos Tailwind3 dev continuam; migração de major exige lote e aprovação
 visual próprios. Integridade store, contagens e dependências dos lotes anteriores
 estão implementados; não tratar o histórico de julho como tarefa autorizada.
+
+## 3. Jornada real de navegador com store e reload
+
+Novo runner `npm.cmd run test:e2e` inicia o Vite em loopback com envFile:false,
+sem config/env real e sem serviços. Requer Playwright disponível localmente;
+`PLAYWRIGHT_MODULE` pode apontar para instalação absoluta existente, sem nova
+dependência de app. Edge é padrão; `E2E_BROWSER_CHANNEL` permite selecionar outro
+canal instalado. Rede externa, métodos de escrita HTTP e service workers são
+bloqueados. Dados/localStorage existem apenas no contexto temporário do browser.
+
+6/6 jornadas:1440/390 e advogado/estagiário/cliente. Pesquisa encontra o
+registro999; conta cliente recebe apenas seu cadastro e é recusada na URL de
+terceiros; contrato48 acessível por paginação. No advogado, quota mantém form e
+bytes; mudança de snapshot reproduz conflito sem overwrite, releitura mantém
+draft, próximo save insere uma vez, preserva edição alheia/49 contratos e reload
+reabre o salvo. Sem overflow/pageerror nos seis cenários.
+
+Conflito é alteração direta fictícia do storage enquanto o form está aberto,
+não corrida simultânea entre processos. Não comprova exclusão mútua entre abas,
+segurança de servidor, dispositivos físicos ou recuperação de disco real.
+CI remoto/publicação permanecem sob o coordenador, não executados por este lote.
