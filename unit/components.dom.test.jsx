@@ -33,6 +33,7 @@ import Modal from '../src/components/Modal.jsx'
 import Donut from '../src/components/Donut.jsx'
 import Home from '../src/pages/Home.jsx'
 import PartyList from '../src/pages/PartyList.jsx'
+import PartyDetail from '../src/pages/PartyDetail.jsx'
 import Agenda from '../src/pages/Agenda.jsx'
 import NewContract from '../src/pages/NewContract.jsx'
 import Dashboard from '../src/pages/Dashboard.jsx'
@@ -516,6 +517,37 @@ describe('proteções da agenda', () => {
 })
 
 describe('início e cadastros', () => {
+  it('mede DOM da lista sintética de mil partes e pesquisa em todos os registros', () => {
+    state.parties = Array.from({ length: 1000 }, (_, i) => fixtureParty({ id: `large-${i}`, name: `Pessoa QA ${i}`, kind: 'cliente' }));
+    const started = performance.now();
+    const { container } = renderPage(<PartyList kind="cliente" />);
+    console.log(`large-party DOM cards=${container.querySelectorAll('h2').length} nodes=${container.querySelectorAll('*').length} elapsed=${(performance.now() - started).toFixed(1)}ms`);
+    expect(container.querySelectorAll('h2').length).toBe(24);
+    expect(screen.getByRole('button', { name: 'Página anterior' }).disabled).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima página' }));
+    expect(screen.getByRole('link', { name: /Pessoa QA 24 PJ/ }).getAttribute('href')).toBe('/parte/large-24');
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'Pessoa QA 999' } });
+    expect(screen.getByRole('link', { name: /Pessoa QA 999/ })).toBeTruthy();
+    expect(screen.queryByRole('navigation', { name: 'Paginar cadastros' })).toBeNull();
+    expect(state.parties.length).toBe(1000);
+  })
+
+  it('pagina contratos sem perder acesso ao último e mantém separação entre elaboração/gerenciamento', () => {
+    state.contracts = Array.from({ length: 49 }, (_, i) => ({ id: `contract-qa-${i}`, partyId: 'party-1', titulo: `Contrato QA ${i}`, source: 'elaboracao', status: 'ativo' }));
+    state.contracts.push({ id: 'manual-qa', partyId: 'party-1', titulo: 'Contrato Manual QA', source: 'manual' });
+    render(<MemoryRouter initialEntries={['/parte/party-1']}><Routes><Route path="/parte/:id" element={<PartyDetail />} /></Routes></MemoryRouter>);
+    expect(screen.getAllByRole('button', { name: /Ver detalhes/ })).toHaveLength(24);
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima página' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima página' }));
+    expect(screen.getByText('Contrato QA 48')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Próxima página' }).disabled).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'Cadastro de gerenciamento', exact: true }));
+    expect(screen.getByText('Contrato Manual QA')).toBeTruthy();
+    expect(screen.queryByRole('navigation', { name: 'Paginar contratos' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Elaboração', exact: true }));
+    expect(screen.getByText('Contrato QA 0')).toBeTruthy();
+    expect(state.contracts).toHaveLength(50);
+  })
   it('atualiza contagens e preserva todos os estados dos contratos e a visibilidade por perfil', () => {
     state.contracts = [
       { partyId: 'party-1', status: 'ativo' }, { partyId: 'party-1', status: 'inativo' },

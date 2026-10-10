@@ -35,6 +35,11 @@ de todos os estados e demo/localStorage preservados. 149 testes, builds
 normal/Pages e verify aprovados; CSS idêntico. Ganhos sintéticos e limites:
 docs/qa-party-counts-20261010.md.
 
+Etapas finais em 10/10/2026: callers CI fixados em SHA imutável do provedor;
+partes/contratos paginados na apresentação (24 cartões), mantendo todos os
+registros e busca completa. 152 testes e builds normal/Pages aprovados.
+Medição e decisões abertas: docs/qa-final-stages-20261010.md.
+
 A elaboracao permite revisao de campos e texto antes de salvar. A minuta e uma
 string editavel, sem exportacao DOC/DOCX. Contratos salvos ainda nao possuem
 editor posterior, versoes ou aprovador. Parcelas representam apenas quantidade.
