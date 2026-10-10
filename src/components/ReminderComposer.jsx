@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import { StorageRecovery } from './StorageNotice.jsx'
 import { Button, Textarea } from './ui/index.jsx'
 import { buildReminder } from '../lib/reminderTemplate.js'
 import { whatsappLink } from '../lib/whatsapp.js'
-import { addReminder, useStore } from '../lib/store.js'
+import { addReminder, useStore, getStorageIssue } from '../lib/store.js'
 import { formatRelativeTime } from '../lib/format.js'
 
 const CHANNEL_LABEL = {
@@ -17,6 +18,8 @@ const CHANNEL_LABEL = {
 export default function ReminderComposer({ event, party, contract }) {
   const [text, setText] = useState(() => buildReminder({ event, party, contract }))
   const [copied, setCopied] = useState(false)
+  const [saveError, setSaveError] = useState('')
+  const textInput = useRef(null)
   const reminders = useStore((s) => s.reminders || [])
   const history = reminders
     .filter((r) => r.eventId === event?.id)
@@ -25,14 +28,20 @@ export default function ReminderComposer({ event, party, contract }) {
   const phone = party?.phone
   const link = phone ? whatsappLink(phone, text) : ''
 
-  function register(channel) {
-    addReminder({
+  function register(channel, clickEvent) {
+    const saved = addReminder({
       eventId: event?.id,
       contractId: contract?.id || event?.contractId,
       partyId: party?.id || event?.partyId,
       channel,
       text
     })
+    if (!saved) {
+      clickEvent?.preventDefault()
+      setSaveError(getStorageIssue()?.message || 'Não foi possível registrar o lembrete. Tente novamente.')
+      return
+    }
+    setSaveError('')
   }
 
   async function copy() {
@@ -49,11 +58,21 @@ export default function ReminderComposer({ event, party, contract }) {
     <div>
       <p className="mb-2 text-xs text-muted">Revise e edite o texto antes de enviar ao cliente.</p>
       <Textarea
+        ref={textInput}
         aria-label="Texto do lembrete"
         value={text}
         onChange={(e) => setText(e.target.value)}
         className="h-64 leading-relaxed"
       />
+      {saveError && (
+        <div className="mt-3">
+          <p className="text-sm text-red-300" role="alert">{saveError}</p>
+          <StorageRecovery
+            onRecovered={() => setSaveError('')}
+            focusAfterRecovery={() => textInput.current?.focus()}
+          />
+        </div>
+      )}
       <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
         <Button variant="ghost" onClick={copy}>
           {copied ? 'Copiado ✓' : 'Copiar texto'}
@@ -62,7 +81,7 @@ export default function ReminderComposer({ event, party, contract }) {
           Registrar envio
         </Button>
         {link ? (
-          <Button as="a" href={link} target="_blank" rel="noopener noreferrer" onClick={() => register('whatsapp')}>
+          <Button as="a" href={link} target="_blank" rel="noopener noreferrer" onClick={(event) => register('whatsapp', event)}>
             Enviar por WhatsApp →
           </Button>
         ) : (

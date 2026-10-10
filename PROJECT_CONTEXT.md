@@ -1,14 +1,18 @@
 ﻿# PROJECT_CONTEXT.md - brd-pactum
 
-Gerado em: 2026-07-07. Estado conferido em: 2026-10-09.
+Gerado em: 2026-07-07. Estado conferido em: 2026-10-10.
 
 ## Estado Implementado
 
 React + Vite seguem adequados ao prototipo atual. Supabase continua planejado:
 AuthContext usa contas de demonstracao, store.js persiste em localStorage e as
 permissoes sao aplicadas apenas no frontend. Nao existe autenticacao real,
-backend, RLS nem persistencia entre dispositivos. Erros de armazenamento ainda
-nao sao apresentados ao usuario; contrato e eventos sao gravados separadamente.
+backend, RLS nem persistencia entre dispositivos. Contrato e seus novos eventos
+agora sao gravados em um unico snapshot antes de atualizar a memoria. Falhas de
+leitura/escrita e conteudo invalido sao apresentados sem sobrescrever dados ou
+fechar formularios; dados de outra aba precisam ser relidos antes de salvar.
+Essa conferencia nao fornece bloqueio entre abas. Evidencia e limites:
+docs/qa-storage-integrity-20261010.md.
 
 A elaboracao permite revisao de campos e texto antes de salvar. A minuta e uma
 string editavel, sem exportacao DOC/DOCX. Contratos salvos ainda nao possuem

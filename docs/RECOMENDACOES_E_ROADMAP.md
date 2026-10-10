@@ -3,7 +3,22 @@
 Documento de apoio para apresentação aos sócios e planejamento das próximas
 etapas do BRD Pactum.
 
-Histórico original: 14 de julho de 2026. Reconciliado em: 9 de outubro de 2026.
+Histórico original: 14 de julho de 2026. Reconciliado em: 10 de outubro de 2026.
+
+## Atualização técnica em 10/10/2026
+
+O lote de integridade local está implementado: contrato e seus novos eventos
+usam uma gravação conjunta; memória e navegação só confirmam salvamento após
+`localStorage.setItem` funcionar. Falhas conservam rascunhos e bytes existentes,
+com releitura dentro dos modais quando necessária. A detecção de alterações em
+outra aba não equivale a bloqueio ou transação entre abas.
+
+Foram aprovados 145 testes (73 Node + 72 DOM), incluindo store real com falhas
+simuladas, reload e formulário real; builds normal e GitHub Pages passaram.
+O audit confirmou os mesmos 19 avisos do lockfile. As atualizações completas
+exigem mudanças maiores de tooling e permanecem em lote separado. Evidências,
+decisões e limites estão em [qa-storage-integrity-20261010.md](qa-storage-integrity-20261010.md).
+Autenticação demo e decisões de produto continuam com os limites já descritos.
 
 ## Situação vigente em 09/10/2026
 
@@ -35,9 +50,11 @@ de julho continua aberta. Regras aprovadas estão em
    do representante na minuta; respeitar campos explicitamente apagados e texto
    salvo vazio; editar agenda sem atribuir contrato ausente ou de outra parte.
    Fixtures cobrem geração, revisão, navegação entre etapas, salvamento e reabertura.
-3. **P1, próximo lote técnico:** tratar falha de armazenamento e gravação conjunta
-   de contrato/eventos. Hoje são commits locais separados e falhas de localStorage
-   não são comunicadas. Não foi alterado neste lote.
+3. **P1, lote técnico implementado em 10/10/2026:** falhas de armazenamento são
+   comunicadas e contrato/eventos compartilham um snapshot. JSON inválido é
+   preservado; falhas não publicam estado ficticiamente salvo. A releitura mantém
+   o rascunho, mas não faz merge nem garante exclusão mútua entre abas. Consulte
+   [a evidência atual](qa-storage-integrity-20261010.md).
 4. **P1, decisão de produto:** papéis de múltiplas partes, editor de contrato salvo,
    versões, histórico, estados e aprovador. Hoje há revisão anterior à geração e
    alteração ativo/inativo, sem ciclo de aprovação posterior.

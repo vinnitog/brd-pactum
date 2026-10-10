@@ -12,7 +12,7 @@ import {
 } from '../src/lib/permissions.js'
 import { buildReminder } from '../src/lib/reminderTemplate.js'
 import { whatsappLink } from '../src/lib/whatsapp.js'
-import { addReminder, listReminders, resetStore } from '../src/lib/store.js'
+import { addReminder, listReminders, resetStore, retryStorage } from '../src/lib/store.js'
 import { CONTRACT_GROUPS, findTipo, getContractValuesByType } from '../src/lib/contractTypes.js'
 import { parseCurrencyBR, maskCNPJ } from '../src/lib/format.js'
 import { deadlineBucket, getContractDeadlineBuckets, getUpcomingEvents, isValidLocalISO } from '../src/lib/deadlines.js'
@@ -109,17 +109,29 @@ test('whatsappLink preserva número que já traz o código do país e trata tele
 })
 
 test('histórico de lembretes registra o envio e filtra por evento e por parte', () => {
-  resetStore()
-  addReminder({ eventId: 'ev1', contractId: 'c1', partyId: 'p1', channel: 'whatsapp', text: 'primeiro' })
-  addReminder({ eventId: 'ev1', contractId: 'c1', partyId: 'p1', channel: 'sistema', text: 'segundo' })
-  addReminder({ eventId: 'ev2', contractId: 'c2', partyId: 'p2', channel: 'whatsapp', text: 'outro' })
+  const previousStorage = Object.getOwnPropertyDescriptor(globalThis, 'localStorage')
+  let raw = null
+  Object.defineProperty(globalThis, 'localStorage', {
+    configurable: true,
+    value: { getItem: () => raw, setItem: (_key, value) => { raw = value } }
+  })
+  try {
+    retryStorage()
+    resetStore()
+    addReminder({ eventId: 'ev1', contractId: 'c1', partyId: 'p1', channel: 'whatsapp', text: 'primeiro' })
+    addReminder({ eventId: 'ev1', contractId: 'c1', partyId: 'p1', channel: 'sistema', text: 'segundo' })
+    addReminder({ eventId: 'ev2', contractId: 'c2', partyId: 'p2', channel: 'whatsapp', text: 'outro' })
 
-  const doEvento = listReminders({ eventId: 'ev1' })
-  assert.equal(doEvento.length, 2)
-  assert.ok(doEvento.every((r) => r.eventId === 'ev1' && r.id && r.sentAt))
-  assert.deepEqual(new Set(doEvento.map((r) => r.text)), new Set(['primeiro', 'segundo']))
-  assert.equal(listReminders({ partyId: 'p2' }).length, 1)
-  resetStore()
+    const doEvento = listReminders({ eventId: 'ev1' })
+    assert.equal(doEvento.length, 2)
+    assert.ok(doEvento.every((r) => r.eventId === 'ev1' && r.id && r.sentAt))
+    assert.deepEqual(new Set(doEvento.map((r) => r.text)), new Set(['primeiro', 'segundo']))
+    assert.equal(listReminders({ partyId: 'p2' }).length, 1)
+    resetStore()
+  } finally {
+    if (previousStorage) Object.defineProperty(globalThis, 'localStorage', previousStorage)
+    else delete globalThis.localStorage
+  }
 })
 
 test('taxonomia de contratos carrega grupos e subtipos', () => {

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import ClassificationPicker from '../components/ClassificationPicker.jsx'
 import { Badge, Button, Card, Field, Input, Textarea } from '../components/ui/index.jsx'
-import { useStore, getParty, saveContract, saveEvent } from '../lib/store.js'
+import { useStore, getParty, saveContractWithEvents, getStorageIssue } from '../lib/store.js'
 import { generateContractText } from '../lib/contractGenerator.js'
 import { reviewFieldsFor } from '../lib/contractReview.js'
 import { qualificacaoFromParty, representanteFromParty } from '../lib/party.js'
@@ -32,6 +32,7 @@ export default function NewContract() {
   // Fluxo em etapas: elaboração → revisão dos dados → revisão do texto.
   const [stage, setStage] = useState('form') // 'form' | 'dados' | 'texto'
   const [text, setText] = useState('')
+  const [saveError, setSaveError] = useState('')
   const set = (k, v) => setF((s) => ({ ...s, [k]: v }))
 
   const isPJ = party?.personType === 'PJ'
@@ -92,16 +93,17 @@ export default function NewContract() {
 
   function confirmar() {
     const contract = buildContract()
-    const saved = saveContract({ ...contract, generatedText: text })
-    if (contract.vencimento) {
-      saveEvent({
-        contractId: saved.id,
+    const events = contract.vencimento ? [{
         partyId: id,
         type: 'vencimento',
         date: contract.vencimento,
         urgency: 'media',
         note: 'Vencimento do contrato'
-      })
+      }] : []
+    const saved = saveContractWithEvents({ ...contract, generatedText: text }, events)
+    if (!saved) {
+      setSaveError(getStorageIssue()?.message || 'Não foi possível salvar o contrato. Confira os dados e tente novamente.')
+      return
     }
     navigate(`/parte/${id}`)
   }
@@ -124,6 +126,7 @@ export default function NewContract() {
             className="h-[28rem] w-full rounded-xl border border-white/40 bg-control p-4 text-base leading-relaxed text-white/90"
           />
         </Card>
+        {saveError && <p className="mt-4 text-sm text-red-300" role="alert">{saveError}</p>}
         <div className="mt-5 flex flex-wrap justify-end gap-3">
           <Button variant="ghost" onClick={() => setStage('dados')}>
             ← Voltar aos dados

@@ -8,7 +8,7 @@
     "build": "vite build",
     "build:pages": "vite build --mode github-pages",
     "preview": "vite preview",
-    "test": "node --test unit/*.test.js unit/*.test.cjs && vitest run unit/components.dom.test.jsx"
+    "test": "node --test unit/*.test.js unit/*.test.cjs && vitest run"
   },
   "dependencies": {
     "react": "^18.3.1",
