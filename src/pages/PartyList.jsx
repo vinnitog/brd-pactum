@@ -1,10 +1,13 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext.jsx'
 import { canManage, visibleParties } from '../lib/permissions.js'
 import { useStore } from '../lib/store.js'
+import { countContractsByParty } from '../lib/partyContracts.js'
 import { Button, Card, Input, Field, Badge, EmptyState } from '../components/ui/index.jsx'
 import PartyFormModal from '../components/PartyFormModal.jsx'
+import ListPagination from '../components/ListPagination.jsx'
+import { paginateList } from '../lib/pagination.js'
 
 const LABELS = {
   cliente: { title: 'Clientes', singular: 'cliente', empty: 'Nenhum cliente cadastrado ainda.' },
@@ -16,8 +19,11 @@ export default function PartyList({ kind }) {
   const { user } = useAuth()
   const parties = useStore((s) => s.parties)
   const contracts = useStore((s) => s.contracts)
+  const contractCounts = useMemo(() => countContractsByParty(contracts), [contracts])
   const [query, setQuery] = useState('')
   const [creating, setCreating] = useState(false)
+  const [page, setPage] = useState(1)
+  useEffect(() => setPage(1), [kind, user?.role, user?.partyId])
   const meta = LABELS[kind] || LABELS.todos
 
   const list = useMemo(() => {
@@ -28,6 +34,7 @@ export default function PartyList({ kind }) {
       (p) => [p.name, p.doc, p.email].some((value) => (value || '').toLowerCase().includes(q))
     )
   }, [user, parties, kind, query])
+  const pagination = paginateList(list, page)
 
   return (
     <div>
@@ -46,7 +53,7 @@ export default function PartyList({ kind }) {
           type="search"
           placeholder={`Pesquisar ${meta.singular} por nome, documento ou e-mail…`}
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => { setQuery(e.target.value); setPage(1) }}
         />
       </Field>
 
@@ -56,8 +63,8 @@ export default function PartyList({ kind }) {
         </EmptyState>
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {list.map((p) => {
-            const count = contracts.filter((c) => c.partyId === p.id).length
+          {pagination.items.map((p) => {
+            const count = contractCounts.get(p.id) || 0
             return (
               <Card as={Link} to={`/parte/${p.id}`} key={p.id} className="block transition-colors hover:border-brd/50 hover:bg-brd/5">
                 <div className="flex items-start justify-between gap-2">
@@ -74,6 +81,7 @@ export default function PartyList({ kind }) {
           })}
         </div>
       )}
+      <ListPagination {...pagination} onPageChange={setPage} label="Paginar cadastros" />
 
       {creating && <PartyFormModal kind={kind} onClose={() => setCreating(false)} />}
     </div>

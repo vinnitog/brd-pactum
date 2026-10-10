@@ -54,7 +54,7 @@ test("automation scopes document credentials to development and keeps private-li
   for (const file of ["develop.yml", "review.yml"]) {
     const workflow = read(`.github/workflows/${file}`);
     const calls = [...workflow.matchAll(/uses:\s*(\S+)/g)].map((match) => match[1]);
-    assert.deepEqual(calls, [`vinnitog/brd-ci/.github/workflows/${file}@main`]);
+    assert.deepEqual(calls, [`vinnitog/brd-ci/.github/workflows/${file}@42feac9abdaac2e7eeae199237b5425a1204d8b6`]);
     const secrets = [...workflow.matchAll(/secrets\.([A-Z_]+)/g)].map((match) => match[1]);
     const expected = ["OPENAI_API_KEY", "TECHTOGS_UTILITIES_SSH_KEY"];
     if (file === "develop.yml") expected.push("TRELLO_API_KEY", "TRELLO_TOKEN");

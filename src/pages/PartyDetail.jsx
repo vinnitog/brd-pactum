@@ -9,6 +9,8 @@ import ManageContractModal from '../components/ManageContractModal.jsx'
 import ContractViewModal from '../components/ContractViewModal.jsx'
 import EventFormModal from '../components/EventFormModal.jsx'
 import AgendaList from '../components/AgendaList.jsx'
+import ListPagination from '../components/ListPagination.jsx'
+import { paginateList } from '../lib/pagination.js'
 
 export default function PartyDetail() {
   const { id } = useParams()
@@ -121,6 +123,7 @@ export default function PartyDetail() {
           </div>
 
           <ContractGrid
+            key={`${party.id}/${subTab}`}
             contracts={subTab === 'elaboracao' ? elaborados : gerenciados}
             emptyLabel={
               subTab === 'elaboracao'
@@ -154,10 +157,13 @@ export default function PartyDetail() {
 }
 
 function ContractGrid({ contracts, emptyLabel, onView }) {
+  const [page, setPage] = useState(1)
+  const pagination = paginateList(contracts, page)
   if (contracts.length === 0) return <EmptyState title={emptyLabel} />
   return (
+    <>
     <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-      {contracts.map((c) => (
+      {pagination.items.map((c) => (
         <Card key={c.id} className="flex flex-col">
           <div className="flex items-start justify-between gap-2">
             <h3 className="font-semibold text-white">{c.titulo || `${c.tipo}${c.subtipo ? ' · ' + c.subtipo : ''}`}</h3>
@@ -176,5 +182,7 @@ function ContractGrid({ contracts, emptyLabel, onView }) {
         </Card>
       ))}
     </div>
+    <ListPagination {...pagination} onPageChange={setPage} label="Paginar contratos" />
+    </>
   )
 }
