@@ -516,6 +516,41 @@ describe('proteções da agenda', () => {
 })
 
 describe('início e cadastros', () => {
+  it('atualiza contagens e preserva todos os estados dos contratos e a visibilidade por perfil', () => {
+    state.contracts = [
+      { partyId: 'party-1', status: 'ativo' }, { partyId: 'party-1', status: 'inativo' },
+      { partyId: 'party-2', status: 'ativo' }, { partyId: 'party-3', status: 'ativo' }
+    ]
+    const { rerender } = renderPage(<PartyList />)
+    expect(within(screen.getByRole('link', { name: /Ana Cliente/ })).getByText('2 contratos')).toBeTruthy()
+    expect(within(screen.getByRole('link', { name: /Bruno Cliente/ })).getByText('1 contrato')).toBeTruthy()
+    expect(within(screen.getByRole('link', { name: /Fornecedor Externo/ })).getByText('1 contrato')).toBeTruthy()
+    state.contracts = [{ partyId: 'party-1', status: 'inativo' }]
+    rerender(<MemoryRouter><PartyList /></MemoryRouter>)
+    expect(within(screen.getByRole('link', { name: /Ana Cliente/ })).getByText('1 contrato')).toBeTruthy()
+    expect(within(screen.getByRole('link', { name: /Bruno Cliente/ })).getByText('0 contratos')).toBeTruthy()
+    authMocks.useAuth.mockReturnValue({ user: client })
+    rerender(<MemoryRouter><PartyList /></MemoryRouter>)
+    expect(screen.getByRole('link', { name: /Ana Cliente/ })).toBeTruthy()
+    expect(screen.queryByRole('link', { name: /Bruno Cliente/ })).toBeNull()
+    expect(screen.queryByRole('link', { name: /Fornecedor Externo/ })).toBeNull()
+  })
+
+  it('não percorre contratos novamente durante a pesquisa quando os contratos não mudaram', () => {
+    let reads = 0
+    state.contracts = Array.from({ length: 1000 }, () => ({
+      get partyId() { reads++; return 'party-1' }
+    }))
+    renderPage(<PartyList kind="cliente" />)
+    const initialReads = reads
+    const search = screen.getByRole('searchbox', { name: 'Pesquisar clientes' })
+    for (const value of ['Ana', 'Bruno', '', '555.666', '']) {
+      fireEvent.change(search, { target: { value } })
+    }
+    expect(reads).toBe(initialReads)
+    expect(within(screen.getByRole('link', { name: /Ana Cliente/ })).getByText('1000 contratos')).toBeTruthy()
+  })
+
   it('limita o estado vazio aos vencimentos futuros quando há um prazo atrasado', () => {
     state.events = [event({ date: '2028-02-14' })]
     renderPage(<Home />)

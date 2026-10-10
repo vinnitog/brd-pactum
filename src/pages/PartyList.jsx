@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext.jsx'
 import { canManage, visibleParties } from '../lib/permissions.js'
 import { useStore } from '../lib/store.js'
+import { countContractsByParty } from '../lib/partyContracts.js'
 import { Button, Card, Input, Field, Badge, EmptyState } from '../components/ui/index.jsx'
 import PartyFormModal from '../components/PartyFormModal.jsx'
 
@@ -16,6 +17,7 @@ export default function PartyList({ kind }) {
   const { user } = useAuth()
   const parties = useStore((s) => s.parties)
   const contracts = useStore((s) => s.contracts)
+  const contractCounts = useMemo(() => countContractsByParty(contracts), [contracts])
   const [query, setQuery] = useState('')
   const [creating, setCreating] = useState(false)
   const meta = LABELS[kind] || LABELS.todos
@@ -57,7 +59,7 @@ export default function PartyList({ kind }) {
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((p) => {
-            const count = contracts.filter((c) => c.partyId === p.id).length
+            const count = contractCounts.get(p.id) || 0
             return (
               <Card as={Link} to={`/parte/${p.id}`} key={p.id} className="block transition-colors hover:border-brd/50 hover:bg-brd/5">
                 <div className="flex items-start justify-between gap-2">

@@ -29,6 +29,12 @@ overrides. npm ci, 145 testes e builds normal/Pages aprovados; alvo de compilaca
 anterior preservado e Node minimo explicitado. Evidencias, custos e limites:
 docs/qa-dependencies-20261010.md.
 
+Contagens dos cadastros em 10/10/2026: contratos indexados uma vez por lista,
+sem releitura durante pesquisas com contratos inalterados. Perfis, contagens
+de todos os estados e demo/localStorage preservados. 149 testes, builds
+normal/Pages e verify aprovados; CSS idêntico. Ganhos sintéticos e limites:
+docs/qa-party-counts-20261010.md.
+
 A elaboracao permite revisao de campos e texto antes de salvar. A minuta e uma
 string editavel, sem exportacao DOC/DOCX. Contratos salvos ainda nao possuem
 editor posterior, versoes ou aprovador. Parcelas representam apenas quantidade.
